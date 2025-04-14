@@ -1,0 +1,31 @@
+.container {
+  padding: 24px;
+  width: 90%;
+
+  @media (min-width: 1600px) {
+    width: 70%;
+  }
+
+  h1 {
+    font-weight: bold;
+  }
+
+  .campo-descricao {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .grupo-vencimento {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+
+    .campo-vencimento {
+      flex: 1;
+    }
+  }
+
+  .botao-pesquisar {
+    margin-top: 16px;
+  }
+}

@@ -1,0 +1,30 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="container">
+  <h1><b>Lançamentos</b></h1>
+
+  <mat-form-field appearance="fill" class="campo-descricao">
+    <mat-label>Descrição</mat-label>
+    <input matInput [(ngModel)]="descricao" placeholder="Digite a descrição">
+  </mat-form-field>
+
+  <div class="grupo-vencimento">
+    <mat-form-field appearance="fill" class="campo-vencimento">
+      <mat-label>Vencimento</mat-label>
+      <input matInput [(ngModel)]="vencimentoInicio" placeholder="De">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="campo-vencimento">
+      <mat-label>até</mat-label>
+      <input matInput [(ngModel)]="vencimentoFim" placeholder="Até">
+    </mat-form-field>
+  </div>
+
+  <button mat-raised-button color="primary" class="botao-pesquisar">
+    Pesquisar
+  </button>
+</div>

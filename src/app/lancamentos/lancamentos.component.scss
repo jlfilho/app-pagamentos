@@ -1,6 +1,6 @@
 .container {
   padding: 24px;
-  width: 90%;
+  width: 95%;
 
   @media (min-width: 1600px) {
     width: 70%;
@@ -28,4 +28,10 @@
   .botao-pesquisar {
     margin-top: 16px;
   }
+}
+
+.tabela-container {
+  margin: 24px;
+  width: 95%;
+  overflow-x: auto;
 }

@@ -1,249 +1,194 @@
-# 📘 Tutorial: Adicionando o formulário de pesquisa de lançamentos
+# 📘 Tutorial: Adicionando uma Tabela com Paginação no Angular Material
 
-## 🎯 Objetivo
+## 🎯 Objetivos
 
-Implementar uma interface com:
-
-- Uma **Toolbar** azul com um botão de menu.
-- Um título "Lançamentos".
-- Um formulário com:
-  - Campo de **descrição**.
-  - Campo de **vencimento (de/até)**.
-  - Botão **Pesquisar**.
+- Integrar uma tabela de dados ao formulário de pesquisa de lançamentos utilizando o componente `mat-table` do Angular Material com suporte à paginação.
+- Aplicar estilos condicionais às células da tabela com a diretiva `ngStyle`, destacando visualmente lançamentos de despesas.
+- Formatar os valores monetários com o `currency pipe`, garantindo exibição adequada no padrão brasileiro.
+- Utilizar o componente `MatTooltip` do Angular Material para fornecer informações complementares ao passar o cursor sobre os ícones de ação.
 
 ---
 
 ## ✅ Pré-requisitos
 
-- Angular CLI instalado (`npm install -g @angular/cli`)
-- Projeto Angular já criado com o modo standalone:
+- Projeto Angular com Angular Material instalado.
+- Componente `lancamentos` já contendo o formulário de pesquisa.
 
-```bash
-ng new api-pagamentos --standalone
-cd api-pagamentos
+---
+
+## 🧩 Passo 1: Editar o Template HTML
+
+Adicione o seguinte conteúdo ao arquivo `lancamentos.component.html`:
+
+```html
+
+<!-- Tabela de Dados -->
+<div class="tabela-container">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+    <!-- Coluna: Pessoa -->
+    <ng-container matColumnDef="pessoa">
+      <th mat-header-cell *matHeaderCellDef> Pessoa </th>
+      <td mat-cell *matCellDef="let lanc"> {{ lanc.pessoa }} </td>
+    </ng-container>
+
+    <!-- Coluna: Descrição -->
+    <ng-container matColumnDef="descricao">
+      <th mat-header-cell *matHeaderCellDef> Descrição </th>
+      <td mat-cell *matCellDef="let lanc"> {{ lanc.descricao }} </td>
+    </ng-container>
+
+    <!-- Coluna: Vencimento -->
+    <ng-container matColumnDef="vencimento">
+      <th mat-header-cell *matHeaderCellDef> Vencimento </th>
+      <td mat-cell *matCellDef="let lanc"> {{ lanc.vencimento }} </td>
+    </ng-container>
+
+    <!-- Coluna: Pagamento -->
+    <ng-container matColumnDef="pagamento">
+      <th mat-header-cell *matHeaderCellDef> Pagamento </th>
+      <td mat-cell *matCellDef="let lanc"> {{ lanc.pagamento || '-' }} </td>
+    </ng-container>
+
+    <!-- Coluna: Valor -->
+    <ng-container matColumnDef="valor">
+      <th mat-header-cell *matHeaderCellDef> Valor </th>
+      <td mat-cell *matCellDef="let lanc" [ngStyle]="{ color: lanc.tipo === 'DESPESA' ? 'red' : 'blue' }">
+        {{ lanc.valor | currency:'BRL' }}
+      </td>
+    </ng-container>
+
+    <!-- Coluna: Ações -->
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef> Ações </th>
+      <td mat-cell *matCellDef="let lanc">
+        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" matTooltip="Excluir" matTooltipPosition="above">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Cabeçalho e Linhas -->
+    <tr mat-header-row *matHeaderRowDef="colunas"></tr>
+    <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
+  </table>
+
+  <!-- Paginação -->
+  <mat-paginator [length]="lancamentos.length"
+                 [pageSize]="3"
+                 [pageSizeOptions]="[3, 10, 20]"
+                 showFirstLastButtons>
+  </mat-paginator>
+</div>
+
+<div class="container">
+  <button mat-raised-button color="primary">Novo lançamento</button>
+</div>
 ```
 
 ---
 
-## 🧩 Passo 1: Instalar o Angular Material
+## 🎨 Passo 2: Aplicar Estilos CSS
 
-```bash
-ng add @angular/material
-```
+No arquivo `lancamentos.component.scss`, adicione:
 
-Durante a instalação, escolha:
-
-- Theme: `Azure/Blue` (ou outro de sua preferência)
-- Global typography styles: `Yes`
-
----
-
-## Passo 2: Instalando o angular animations
-
-```bash
-ng add @angular/material
-npm install @angular/animations
-```
-
-## 📁 Passo 3: Criar o componente `lancamentos`
-
-```bash
-ng generate component lancamentos --standalone
+```scss
+.tabela-container {
+  margin: 24px;
+  width: 95%;
+  overflow-x: auto;
+}
 ```
 
 ---
 
-## 🎨 Passo 4: Atualizar `lancamentos.component.ts`
+## 🔧 Passo 3: Atualizar o Componente TypeScript
 
-Substitua o conteúdo por:
+Substitua o conteúdo do arquivo `lancamentos.component.ts` por:
 
 ```ts
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-lancamentos',
   standalone: true,
   imports: [
     FormsModule,
+    CommonModule,
     MatToolbarModule,
+    MatPaginatorModule,
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatTableModule,
+    MatTooltipModule
   ],
   templateUrl: './lancamentos.component.html',
-  styleUrls: ['./lancamentos.component.scss']
+  styleUrl: './lancamentos.component.scss'
 })
-export class LancamentosComponent {
+export class LancamentosComponent implements OnInit, AfterViewInit {
   descricao = '';
   vencimentoInicio = '';
   vencimentoFim = '';
-}
-```
 
----
+  colunas: string[] = ['pessoa', 'descricao', 'vencimento', 'pagamento', 'valor', 'acoes'];
 
-## 🧾 Passo 5: Criar o HTML do componente
+  lancamentos = [
+    { tipo: 'RECEITA', pessoa: 'Henrique Medeiros', descricao: 'Bahamas', vencimento: '10/06/2017', pagamento: null, valor: 500.00 },
+    { tipo: 'DESPESA', pessoa: 'Josué Mariano', descricao: 'Café', vencimento: '10/06/2017', pagamento: null, valor: 8.32 },
+    { tipo: 'RECEITA', pessoa: 'Maria Rita', descricao: 'Bahamas', vencimento: '10/02/2017', pagamento: '10/02/2017', valor: 100.32 },
+    { tipo: 'RECEITA', pessoa: 'Pedro Santos', descricao: 'Top Club', vencimento: '10/06/2017', pagamento: null, valor: 120.00 },
+    { tipo: 'RECEITA', pessoa: 'Ricardo Pereira', descricao: 'CEMIG', vencimento: '10/02/2017', pagamento: '10/02/2017', valor: 110.44 }
+  ];
 
-Edite `**lancamentos.component.html**`:
+  dataSource = new MatTableDataSource(this.lancamentos);
 
-```html
-<mat-toolbar color="primary">
-  <button mat-icon-button>
-    <mat-icon>menu</mat-icon>
-  </button>
-</mat-toolbar>
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-<div class="container">
-  <h1><b>Lançamentos</b></h1>
+  ngOnInit(): void {}
 
-  <mat-form-field appearance="fill" class="campo-descricao">
-    <mat-label>Descrição</mat-label>
-    <input matInput [(ngModel)]="descricao" placeholder="Digite a descrição">
-  </mat-form-field>
-
-  <div class="grupo-vencimento">
-    <mat-form-field appearance="fill" class="campo-vencimento">
-      <mat-label>Vencimento</mat-label>
-      <input matInput [(ngModel)]="vencimentoInicio" placeholder="De">
-    </mat-form-field>
-
-    <mat-form-field appearance="fill" class="campo-vencimento">
-      <mat-label>até</mat-label>
-      <input matInput [(ngModel)]="vencimentoFim" placeholder="Até">
-    </mat-form-field>
-  </div>
-
-  <button mat-raised-button color="primary" class="botao-pesquisar">
-    Pesquisar
-  </button>
-</div>
-```
-
----
-
-## 🎨 Passo 6: Configure os estilos em CSS (SCSS) 
-
-Edite `**lancamentos.component.scss**`:
-
-```scss
-.container {
-  padding: 24px;
-  width: 90%;
-
-  @media (min-width: 1600px) {
-    width: 70%;
-  }
-
-  h1 {
-    font-weight: bold;
-  }
-
-  .campo-descricao {
-    width: 100%;
-    margin-top: 16px;
-  }
-
-  .grupo-vencimento {
-    display: flex;
-    gap: 16px;
-    margin-top: 16px;
-
-    .campo-vencimento {
-      flex: 1;
-    }
-  }
-
-  .botao-pesquisar {
-    margin-top: 16px;
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
   }
 }
 ```
 
 ---
 
-## 🛠️ Passo 7: Configurar as rotas
+## ▶️ Passo 4: Executar o Projeto
 
-Edite o arquivo `src/app/app.routes.ts`:
-
-```ts
-import { Routes } from '@angular/router';
-import { LancamentosComponent } from './lancamentos/lancamentos.component';
-
-export const routes: Routes = [
-  {
-    path: '',
-    component: LancamentosComponent
-  }
-];
-```
-
----
-
-## ⚙️ Passo 8: Garantir que animações estejam configuradas
-
-Edite `src/app/app.config.ts`:
-
-```ts
-import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { routes } from './app.routes';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideRouter(routes),
-    provideAnimations()
-  ]
-};
-```
-
----
-
-## 🖥️ Passo 9: Executar o projeto
+No terminal, execute o comando:
 
 ```bash
 ng serve
 ```
 
-Acesse [http://localhost:4200](http://localhost:4200)
-
-
-Se ocorrer `Error: EBUSY`
-
-```bash
-npm cache clean
-
-npm install --cache
-```
+Acesse a aplicação no navegador pelo endereço: [http://localhost:4200](http://localhost:4200)
 
 ---
 
-## ✅ Resultado Esperado
+## 🗃️ Passo 5: Versionar no GitHub
 
-A aplicação deve exibir:
-
-- Uma **barra cinza** com botão de menu.
-- Um **título "Lançamentos"** em destaque.
-- Um formulário com:
-  - Campo de **Descrição**.
-  - Campo de vencimento **De** e **Até**.
-  - Botão **Pesquisar**.
-
----
-
-## 🖍️ Passo 10: Salve no repositório Github
-
+Após verificar que está tudo funcionando corretamente, registre e envie as alterações ao repositório remoto:
 
 ```bash
 git add .
-git commit -m "Adicionando o formulário de pesquisa de lançamentos"
-git push -u origin main
+git commit -m "Adiciona tabela de lançamentos com paginação"
+git push origin main
 ```
-

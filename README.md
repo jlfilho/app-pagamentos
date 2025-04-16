@@ -1,194 +1,181 @@
-# 📘 Tutorial: Adicionando uma Tabela com Paginação no Angular Material
+# 📘 Tutorial: Desmembrando o `mat-toolbar` e Criando Menu Intercambiável
 
-## 🎯 Objetivos
+## 🎯 Objetivo  
 
-- Integrar uma tabela de dados ao formulário de pesquisa de lançamentos utilizando o componente `mat-table` do Angular Material com suporte à paginação.
-- Aplicar estilos condicionais às células da tabela com a diretiva `ngStyle`, destacando visualmente lançamentos de despesas.
-- Formatar os valores monetários com o `currency pipe`, garantindo exibição adequada no padrão brasileiro.
-- Utilizar o componente `MatTooltip` do Angular Material para fornecer informações complementares ao passar o cursor sobre os ícones de ação.
+- Separar a `mat-toolbar` em um componente chamado `TopbarComponent`.
+- Adicionar um menu lateral (`mat-sidenav`) com itens de navegação.
+- Permitir que o menu seja aberto/fechado de qualquer lugar da aplicação.
+- Integrar a navegação utilizando o Angular Router.
 
 ---
 
 ## ✅ Pré-requisitos
 
-- Projeto Angular com Angular Material instalado.
-- Componente `lancamentos` já contendo o formulário de pesquisa.
+- Rotas configuradas com alguns componentes (como `LancamentosComponent`).
 
 ---
 
-## 🧩 Passo 1: Editar o Template HTML
+## 🧩 Passo 1: Criar o componente `topbar` 
 
-Adicione o seguinte conteúdo ao arquivo `lancamentos.component.html`:
+```bash
+ng generate component shared/components/topbar 
+```
+
+---
+
+## ✏️ Passo 2: Editar `topbar.component.html`
 
 ```html
-
-<!-- Tabela de Dados -->
-<div class="tabela-container">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-
-    <!-- Coluna: Pessoa -->
-    <ng-container matColumnDef="pessoa">
-      <th mat-header-cell *matHeaderCellDef> Pessoa </th>
-      <td mat-cell *matCellDef="let lanc"> {{ lanc.pessoa }} </td>
-    </ng-container>
-
-    <!-- Coluna: Descrição -->
-    <ng-container matColumnDef="descricao">
-      <th mat-header-cell *matHeaderCellDef> Descrição </th>
-      <td mat-cell *matCellDef="let lanc"> {{ lanc.descricao }} </td>
-    </ng-container>
-
-    <!-- Coluna: Vencimento -->
-    <ng-container matColumnDef="vencimento">
-      <th mat-header-cell *matHeaderCellDef> Vencimento </th>
-      <td mat-cell *matCellDef="let lanc"> {{ lanc.vencimento }} </td>
-    </ng-container>
-
-    <!-- Coluna: Pagamento -->
-    <ng-container matColumnDef="pagamento">
-      <th mat-header-cell *matHeaderCellDef> Pagamento </th>
-      <td mat-cell *matCellDef="let lanc"> {{ lanc.pagamento || '-' }} </td>
-    </ng-container>
-
-    <!-- Coluna: Valor -->
-    <ng-container matColumnDef="valor">
-      <th mat-header-cell *matHeaderCellDef> Valor </th>
-      <td mat-cell *matCellDef="let lanc" [ngStyle]="{ color: lanc.tipo === 'DESPESA' ? 'red' : 'blue' }">
-        {{ lanc.valor | currency:'BRL' }}
-      </td>
-    </ng-container>
-
-    <!-- Coluna: Ações -->
-    <ng-container matColumnDef="acoes">
-      <th mat-header-cell *matHeaderCellDef> Ações </th>
-      <td mat-cell *matCellDef="let lanc">
-        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button color="warn" matTooltip="Excluir" matTooltipPosition="above">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </td>
-    </ng-container>
-
-    <!-- Cabeçalho e Linhas -->
-    <tr mat-header-row *matHeaderRowDef="colunas"></tr>
-    <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
-  </table>
-
-  <!-- Paginação -->
-  <mat-paginator [length]="lancamentos.length"
-                 [pageSize]="3"
-                 [pageSizeOptions]="[3, 10, 20]"
-                 showFirstLastButtons>
-  </mat-paginator>
-</div>
-
-<div class="container">
-  <button mat-raised-button color="primary">Novo lançamento</button>
-</div>
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="toggleMenu.emit()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>App Pagamentos</span>
+</mat-toolbar>
 ```
 
 ---
 
-## 🎨 Passo 2: Aplicar Estilos CSS
-
-No arquivo `lancamentos.component.scss`, adicione:
-
-```scss
-.tabela-container {
-  margin: 24px;
-  width: 95%;
-  overflow-x: auto;
-}
-```
-
----
-
-## 🔧 Passo 3: Atualizar o Componente TypeScript
-
-Substitua o conteúdo do arquivo `lancamentos.component.ts` por:
+## 🧠 Passo 3: Editar `topbar.component.ts`
 
 ```ts
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-lancamentos',
-  standalone: true,
-  imports: [
-    FormsModule,
-    CommonModule,
-    MatToolbarModule,
-    MatPaginatorModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatTableModule,
-    MatTooltipModule
-  ],
-  templateUrl: './lancamentos.component.html',
-  styleUrl: './lancamentos.component.scss'
+  selector: 'app-topbar',
+  imports: [CommonModule, MatToolbarModule, MatButtonModule, MatIconModule],
+  templateUrl: './topbar.component.html',
+  styleUrls: ['./topbar.component.scss']
 })
-export class LancamentosComponent implements OnInit, AfterViewInit {
-  descricao = '';
-  vencimentoInicio = '';
-  vencimentoFim = '';
-
-  colunas: string[] = ['pessoa', 'descricao', 'vencimento', 'pagamento', 'valor', 'acoes'];
-
-  lancamentos = [
-    { tipo: 'RECEITA', pessoa: 'Henrique Medeiros', descricao: 'Bahamas', vencimento: '10/06/2017', pagamento: null, valor: 500.00 },
-    { tipo: 'DESPESA', pessoa: 'Josué Mariano', descricao: 'Café', vencimento: '10/06/2017', pagamento: null, valor: 8.32 },
-    { tipo: 'RECEITA', pessoa: 'Maria Rita', descricao: 'Bahamas', vencimento: '10/02/2017', pagamento: '10/02/2017', valor: 100.32 },
-    { tipo: 'RECEITA', pessoa: 'Pedro Santos', descricao: 'Top Club', vencimento: '10/06/2017', pagamento: null, valor: 120.00 },
-    { tipo: 'RECEITA', pessoa: 'Ricardo Pereira', descricao: 'CEMIG', vencimento: '10/02/2017', pagamento: '10/02/2017', valor: 110.44 }
-  ];
-
-  dataSource = new MatTableDataSource(this.lancamentos);
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-  }
+export class TopbarComponent {
+  @Output() toggleMenu = new EventEmitter<void>();
 }
 ```
 
 ---
 
-## ▶️ Passo 4: Executar o Projeto
+## 🔧 Passo 4: Remover a `mat-toolbar` do `lancamentos.component.html`
 
-No terminal, execute o comando:
+Remova o trecho antigo da toolbar, pois agora ela será usada no `LayoutComponent`.
 
-```bash
-ng serve
+```html
+<mat-toolbar color="primary">
+  <button mat-icon-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+</mat-toolbar>
 ```
-
-Acesse a aplicação no navegador pelo endereço: [http://localhost:4200](http://localhost:4200)
 
 ---
 
-## 🗃️ Passo 5: Versionar no GitHub
-
-Após verificar que está tudo funcionando corretamente, registre e envie as alterações ao repositório remoto:
+## 🧩 Passo 5: Criar o componente `layout` 
 
 ```bash
-git add .
-git commit -m "Adiciona tabela de lançamentos com paginação"
-git push origin main
+ng generate component layout 
+```
+
+---
+
+## ✏️ Passo 6: Editar `layout.component.html`
+
+```html
+<!--Barra de menu-->
+<app-topbar (toggleMenu)="drawer.toggle()"></app-topbar>
+<!--Menu lateral-->
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer mode="side" opened="false" position="start">
+     <!-- Barra Lateral -->
+    <mat-nav-list>
+      <a mat-list-item routerLink="/lancamentos">Administrador</a>
+      <mat-divider></mat-divider>
+      <a mat-list-item routerLink="/lancamentos">Lancamentos</a>
+      <a mat-list-item routerLink="/Pessoas">Pessoas</a>
+      <a mat-list-item routerLink="/Pessoas">Sair</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Conteúdo Principal -->
+  <mat-sidenav-content>
+    <!-- Área de Conteúdo -->
+    <div class="content">
+      <router-outlet />
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+```
+
+---
+
+## 🎨 Passo 7: Editar `layout.component.scss`
+
+```scss
+.sidenav-container {
+  height: 100vh;
+}
+
+.content {
+  padding: 24px;
+}
+```
+
+---
+
+## 🛠️ Passo 8: Editar `layout.component.ts` com os imports necessários
+
+```ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { TopbarComponent } from '../shared/components/topbar/topbar.component';
+
+@Component({
+  selector: 'app-layout',
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatListModule,
+    MatButtonModule,
+    MatDividerModule,
+    TopbarComponent
+  ],
+  templateUrl: './layout.component.html',
+  styleUrls: ['./layout.component.scss']
+})
+export class LayoutComponent {}
+```
+
+---
+
+## 🌐 Passo 9: Configurar as rotas para usar o `LayoutComponent`
+
+No seu arquivo `app.routes.ts` (ou onde define suas rotas):
+
+```ts
+import { Routes } from '@angular/router';
+import { LancamentosComponent } from './lancamentos/lancamentos.component';
+import { LayoutComponent } from './layout/layout.component';
+
+export const routes: Routes = [
+  {
+    path: '',
+    component: LayoutComponent,
+    children: [
+      { path: 'lancamentos', component: LancamentosComponent },
+      { path: '', redirectTo: 'lancamentos', pathMatch: 'full' }
+    ]
+  }
+];
 ```

@@ -6,7 +6,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import {MatDividerModule} from '@angular/material/divider';
 import { TopbarComponent } from '../shared/components/topbar/topbar.component';
-import { RouterOutlet } from '@angular/router';
+import { RouterModule, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-layout',
@@ -18,6 +18,7 @@ import { RouterOutlet } from '@angular/router';
     MatButtonModule,
     TopbarComponent,
     MatDividerModule,
+    RouterModule,
     RouterOutlet
   ],
   templateUrl: './layout.component.html',

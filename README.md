@@ -1,181 +1,258 @@
-# 📘 Tutorial: Desmembrando o `mat-toolbar` e Criando Menu Intercambiável
+# 📘 Tutorial: Adicionando o formulário de pesquisa de pessoas
 
-## 🎯 Objetivo  
+## 🎯 Objetivo
 
-- Separar a `mat-toolbar` em um componente chamado `TopbarComponent`.
-- Adicionar um menu lateral (`mat-sidenav`) com itens de navegação.
-- Permitir que o menu seja aberto/fechado de qualquer lugar da aplicação.
-- Integrar a navegação utilizando o Angular Router.
+Implementar uma interface com:
+
+- Uma **Toolbar** azul com um botão de menu.
+- Um título "Pessoas".
+- Um formulário com:
+  - Campo de **nome**.
+  - Botão **Pesquisar**.
+  - Tabela com:
+    - Colunas: **Nome**, **Cidade**, **Estado**, **Status** e **Ações**.
+    - Paginação com 10 registros por página.
+  - Exibir os dados de pessoas cadastradas.
+  - Botão Nova Pessoa que redireciona para o formulário de cadastro de pessoas.
 
 ---
 
-## ✅ Pré-requisitos
 
-- Rotas configuradas com alguns componentes (como `LancamentosComponent`).
-
----
-
-## 🧩 Passo 1: Criar o componente `topbar` 
+## 📁 Passo 1: Criar o componente `pessoas`
 
 ```bash
-ng generate component shared/components/topbar 
+ng generate component pessoas
 ```
 
 ---
 
-## ✏️ Passo 2: Editar `topbar.component.html`
+## 🎨 Passo 2: Atualizar `pessoas.component.ts`
 
-```html
-<mat-toolbar color="primary">
-  <button mat-icon-button (click)="toggleMenu.emit()">
-    <mat-icon>menu</mat-icon>
-  </button>
-  <span>App Pagamentos</span>
-</mat-toolbar>
-```
-
----
-
-## 🧠 Passo 3: Editar `topbar.component.ts`
+Substitua o conteúdo por:
 
 ```ts
-import { Component, EventEmitter, Output } from '@angular/core';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-  selector: 'app-topbar',
-  imports: [CommonModule, MatToolbarModule, MatButtonModule, MatIconModule],
-  templateUrl: './topbar.component.html',
-  styleUrls: ['./topbar.component.scss']
+  selector: 'app-pessoas',
+  imports: [FormsModule,
+    CommonModule,
+    MatPaginatorModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatTableModule,
+    MatTooltipModule],
+  templateUrl: './pessoas.component.html',
+  styleUrl: './pessoas.component.scss'
 })
-export class TopbarComponent {
-  @Output() toggleMenu = new EventEmitter<void>();
+export class PessoasComponent implements OnInit, AfterViewInit {
+  nome = '';
+
+  colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
+
+  pessoas = [
+    { nome: 'Henrique Medeiros', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
+    { nome: 'Juliana Costa', cidade: 'Manaus', estado: 'AM', status: 'Ativo' },
+    { nome: 'Roberto Lima', cidade: 'Parintins', estado: 'AM', status: 'Inativo' },
+    { nome: 'Ana Paula Souza', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
+    { nome: 'Marcos Vinícius', cidade: 'Tefé', estado: 'AM', status: 'Ativo' },
+    { nome: 'Larissa Oliveira', cidade: 'Coari', estado: 'AM', status: 'Inativo' },
+    { nome: 'Carlos Henrique', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
+    { nome: 'Fernanda Andrade', cidade: 'Manacapuru', estado: 'AM', status: 'Ativo' },
+    { nome: 'João Victor Mendes', cidade: 'Tabatinga', estado: 'AM', status: 'Inativo' },
+    { nome: 'Patrícia Ramos', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' }
+  ];
+
+  dataSource = new MatTableDataSource(this.pessoas);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+  }
 }
 ```
 
 ---
 
-## 🔧 Passo 4: Remover a `mat-toolbar` do `lancamentos.component.html`
+## 🧾 Passo 3: Criar o HTML do componente
 
-Remova o trecho antigo da toolbar, pois agora ela será usada no `LayoutComponent`.
+Edite `**lancamentos.component.html**`:
 
 ```html
-<mat-toolbar color="primary">
-  <button mat-icon-button>
-    <mat-icon>menu</mat-icon>
+<div class="container">
+  <h1><b>Pessoas</b></h1>
+
+  <mat-form-field appearance="fill" class="campo-nome">
+    <mat-label>Nome</mat-label>
+    <input matInput [(ngModel)]="nome" placeholder="Digite o nome">
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" class="botao-pesquisar">
+    Pesquisar
   </button>
-</mat-toolbar>
+</div>
+
+<!-- Tabela de Dados -->
+<div class="tabela-container">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+    <!-- Coluna: Nome -->
+    <ng-container matColumnDef="nome">
+      <th mat-header-cell *matHeaderCellDef> Nome </th>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.nome }} </td>
+    </ng-container>
+
+    <!-- Coluna: Cidade -->
+    <ng-container matColumnDef="cidade">
+      <th mat-header-cell *matHeaderCellDef> Cidade </th>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.cidade }} </td>
+    </ng-container>
+
+    <!-- Coluna: Vencimento -->
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef> Estado </th>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.estado }} </td>
+    </ng-container>
+
+    <!-- Coluna: Pagamento -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef> Status </th>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.status }} </td>
+    </ng-container>
+
+    <!-- Coluna: Ações -->
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef> Ações </th>
+      <td mat-cell *matCellDef="let lanc">
+        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" matTooltip="Excluir" matTooltipPosition="above">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Cabeçalho e Linhas -->
+    <tr mat-header-row *matHeaderRowDef="colunas"></tr>
+    <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
+  </table>
+
+  <!-- Paginação -->
+  <mat-paginator [length]="pessoas.length"
+                 [pageSize]="3"
+                 [pageSizeOptions]="[3, 10, 20]"
+                 showFirstLastButtons>
+  </mat-paginator>
+</div>
+
+<div class="container">
+  <button mat-raised-button color="primary">Novo pessoa</button>
+</div>
 ```
 
 ---
 
-## 🧩 Passo 5: Criar o componente `layout` 
+## 🎨 Passo 4: Configure os estilos em CSS (SCSS) 
 
-```bash
-ng generate component layout 
-```
-
----
-
-## ✏️ Passo 6: Editar `layout.component.html`
-
-```html
-<!--Barra de menu-->
-<app-topbar (toggleMenu)="drawer.toggle()"></app-topbar>
-<!--Menu lateral-->
-<mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #drawer mode="side" opened="false" position="start">
-     <!-- Barra Lateral -->
-    <mat-nav-list>
-      <a mat-list-item routerLink="/lancamentos">Administrador</a>
-      <mat-divider></mat-divider>
-      <a mat-list-item routerLink="/lancamentos">Lancamentos</a>
-      <a mat-list-item routerLink="/Pessoas">Pessoas</a>
-      <a mat-list-item routerLink="/Pessoas">Sair</a>
-    </mat-nav-list>
-  </mat-sidenav>
-
-  <!-- Conteúdo Principal -->
-  <mat-sidenav-content>
-    <!-- Área de Conteúdo -->
-    <div class="content">
-      <router-outlet />
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
-```
-
----
-
-## 🎨 Passo 7: Editar `layout.component.scss`
+Edite `**lancamentos.component.scss**`:
 
 ```scss
-.sidenav-container {
-  height: 100vh;
-}
-
-.content {
+.container {
   padding: 24px;
+  width: 95%;
+
+  @media (min-width: 1600px) {
+    width: 70%;
+  }
+
+  h1 {
+    font-weight: bold;
+  }
+
+  .campo-nome {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .botao-pesquisar {
+    margin-top: 16px;
+  }
+}
+
+.tabela-container {
+  margin: 24px;
+  width: 95%;
+  overflow-x: auto;
 }
 ```
 
 ---
 
-## 🛠️ Passo 8: Editar `layout.component.ts` com os imports necessários
+## 🛠️ Passo 5: Configurar as rotas
 
-```ts
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
-import { TopbarComponent } from '../shared/components/topbar/topbar.component';
-
-@Component({
-  selector: 'app-layout',
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatIconModule,
-    MatListModule,
-    MatButtonModule,
-    MatDividerModule,
-    TopbarComponent
-  ],
-  templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss']
-})
-export class LayoutComponent {}
-```
-
----
-
-## 🌐 Passo 9: Configurar as rotas para usar o `LayoutComponent`
-
-No seu arquivo `app.routes.ts` (ou onde define suas rotas):
+Edite o arquivo `src/app/app.routes.ts`:
 
 ```ts
 import { Routes } from '@angular/router';
 import { LancamentosComponent } from './lancamentos/lancamentos.component';
 import { LayoutComponent } from './layout/layout.component';
+import { PessoasComponent } from './pessoas/pessoas/pessoas.component';
 
 export const routes: Routes = [
   {
     path: '',
     component: LayoutComponent,
     children: [
+      { path: '', redirectTo: 'lancamentos', pathMatch: 'full' },
+      { path: 'pessoas', component: PessoasComponent },
       { path: 'lancamentos', component: LancamentosComponent },
-      { path: '', redirectTo: 'lancamentos', pathMatch: 'full' }
     ]
-  }
+  },
+  { path: '**', redirectTo: '', pathMatch: 'full' }
 ];
+```
+
+---
+
+## 🖥️ Passo 6: Executar o projeto
+
+```bash
+ng serve
+```
+
+Acesse [http://localhost:4200](http://localhost:4200)
+
+
+Se ocorrer `Error: EBUSY`
+
+```bash
+npm cache clean
+
+npm install --cache
+```
+
+---
+
+## 🖍️ Passo 7: Salve no repositório Github
+
+
+```bash
+git add .
+git commit -m "Adicionando o formulário de pesquisa de pessoas"
+git push -u origin main
 ```

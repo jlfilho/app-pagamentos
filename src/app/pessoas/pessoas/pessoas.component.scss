@@ -1,0 +1,27 @@
+.container {
+  padding: 24px;
+  width: 95%;
+
+  @media (min-width: 1600px) {
+    width: 70%;
+  }
+
+  h1 {
+    font-weight: bold;
+  }
+
+  .campo-nome {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .botao-pesquisar {
+    margin-top: 16px;
+  }
+}
+
+.tabela-container {
+  margin: 24px;
+  width: 95%;
+  overflow-x: auto;
+}

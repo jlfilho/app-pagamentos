@@ -30,17 +30,17 @@ import { RouterModule } from '@angular/router';
 })
 export class LancamentoCadastroComponent {
   form: FormGroup;
-  tipoLancamento = signal<'receita' | 'despesa'>('receita');
 
   categorias = ['Salário', 'Aluguel', 'Transporte'];
   pessoas = ['João', 'Maria', 'Carlos'];
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
+      tipo: ['receita', Validators.required],
       vencimento: ['', Validators.required],
       recebimento: [''],
-      descricao: ['', Validators.required],
-      valor: [0, Validators.required],
+      descricao: ['', [Validators.required, Validators.minLength(10)]],
+      valor: [0, [Validators.required, Validators.min(0.01)]],
       categoria: ['', Validators.required],
       pessoa: ['', Validators.required],
       observacao: ['']
@@ -56,7 +56,6 @@ export class LancamentoCadastroComponent {
   novo() {
     this.form.markAsPristine();
     this.form.markAsUntouched();
-    this.form.reset({ valor: 0 });
-    this.tipoLancamento.set('receita');
+    this.form.reset({ tipo: 'receita', valor: 0 });
   }
 }

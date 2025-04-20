@@ -22,12 +22,12 @@ export class PessoaCadastroComponent {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      nome: ['', Validators.required],
+      nome: ['', [Validators.required, Validators.minLength(5)]],
       logradouro: ['', Validators.required],
       numero: ['', Validators.required],
       complemento: [''],
       bairro: ['', Validators.required],
-      cep: ['', Validators.required],
+      cep: ['', [Validators.required, Validators.pattern(/^\d{5}-\d{3}$/)]],
       cidade: ['', Validators.required],
       estado: ['', Validators.required],
      });

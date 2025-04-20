@@ -6,16 +6,36 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Nome</mat-label>
       <input matInput formControlName="nome" />
+      @if (form.get('nome')?.hasError('required') && form.get('nome')?.touched) {
+        <mat-error>
+          Nome é obrigatório.
+        </mat-error>
+      }
+      @if (form.get('nome')?.hasError('minlength') && form.get('nome')?.touched) {
+        <mat-error>
+          Nome deve ter no mínimo 5 letras.
+        </mat-error>
+      }
     </mat-form-field>
 
     <div class="row">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Logradouro</mat-label>
         <input matInput formControlName="logradouro" />
+        @if (form.get('logradouro')?.hasError('required') && form.get('logradouro')?.touched) {
+          <mat-error>
+            Logradouro é obrigatório.
+          </mat-error>
+        }
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Número</mat-label>
         <input matInput formControlName="numero" />
+        @if (form.get('numero')?.hasError('required') && form.get('numero')?.touched) {
+          <mat-error>
+            Número é obrigatório.
+          </mat-error>
+        }
       </mat-form-field>
     </div>
 
@@ -27,6 +47,11 @@
       <mat-form-field appearance="outline" class="campo35">
         <mat-label>Bairro</mat-label>
         <input matInput formControlName="bairro" />
+        @if (form.get('bairro')?.hasError('required') && form.get('bairro')?.touched) {
+          <mat-error>
+            Bairro é obrigatório.
+          </mat-error>
+        }
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>CEP</mat-label>
@@ -35,6 +60,11 @@
          formControlName="cep"
          mask="00.000-000"
          placeholder="00.000-000" />
+         @if (form.get('cep')?.hasError('required') && form.get('cep')?.touched) {
+          <mat-error>
+            Cep é obrigatório.
+          </mat-error>
+        }
       </mat-form-field>
     </div>
 
@@ -42,15 +72,25 @@
       <mat-form-field appearance="outline" class="campo45">
         <mat-label>Cidade</mat-label>
         <input matInput formControlName="cidade" />
+        @if (form.get('cidade')?.hasError('required') && form.get('cidade')?.touched) {
+          <mat-error>
+            Cidade é obrigatório.
+          </mat-error>
+        }
       </mat-form-field>
       <mat-form-field appearance="outline" class="campo45">
         <mat-label>Estado</mat-label>
         <input matInput formControlName="estado" />
+        @if (form.get('estado')?.hasError('required') && form.get('estado')?.touched) {
+          <mat-error>
+            Estado é obrigatório.
+          </mat-error>
+        }
       </mat-form-field>
     </div>
 
     <div class="buttons">
-      <button mat-raised-button color="primary" (click)="salvar()">Salvar</button>
+      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="form.invalid">Salvar</button>
       <button mat-stroked-button color="accent" (click)="novo()">Novo</button>
       <a mat-button routerLink="/pessoas">Voltar para a pesquisa</a>
     </div>

@@ -8,11 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-pessoas',
   imports: [FormsModule,
     CommonModule,
+    RouterModule,
     MatPaginatorModule,
     MatIconModule,
     MatFormFieldModule,

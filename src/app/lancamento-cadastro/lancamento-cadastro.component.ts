@@ -54,6 +54,8 @@ export class LancamentoCadastroComponent {
   }
 
   novo() {
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
     this.form.reset({ valor: 0 });
     this.tipoLancamento.set('receita');
   }

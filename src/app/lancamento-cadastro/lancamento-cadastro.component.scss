@@ -8,8 +8,27 @@
 
   .row {
     display: flex;
+    justify-content: space-between;
     gap: 16px;
     margin-bottom: 16px;
+    .campo100 {
+      flex: 0 0 100%;
+    }
+    .campo70 {
+      flex: 0 0 70%;
+    }
+    .campo45 {
+      flex: 0 0 49%;
+    }
+    .campo35 {
+      flex: 0 0 35%;
+    }
+    .campo30 {
+      flex: 0 0 30%;
+    }
+    .campo20 {
+      flex: 0 0 20%;
+    }
   }
 
   .full-width {

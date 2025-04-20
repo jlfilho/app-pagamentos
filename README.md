@@ -1,258 +1,259 @@
-# 📘 Tutorial: Adicionando o formulário de pesquisa de pessoas
+# 🧾 Tutorial — Formulário "Novo Lançamento" 
 
-## 🎯 Objetivo
+Este tutorial ensina como criar um formulário funcional com Angular 19 e Angular Material para lançamentos de receitas e despesas, com suporte a:
 
-Implementar uma interface com:
-
-- Uma **Toolbar** azul com um botão de menu.
-- Um título "Pessoas".
-- Um formulário com:
-  - Campo de **nome**.
-  - Botão **Pesquisar**.
-  - Tabela com:
-    - Colunas: **Nome**, **Cidade**, **Estado**, **Status** e **Ações**.
-    - Paginação com 10 registros por página.
-  - Exibir os dados de pessoas cadastradas.
-  - Botão Nova Pessoa que redireciona para o formulário de cadastro de pessoas.
+- Angular Material
+- `LOCALE_ID` em `pt-BR` (datas formatadas no padrão brasileiro)
+- Campo de valor com máscara de moeda (`R$`), usando `ngx-mask`
 
 ---
 
-
-## 📁 Passo 1: Criar o componente `pessoas`
+## 1. 🧱 Instale as dependências
 
 ```bash
-ng generate component pessoas
+npm install ngx-mask --save
 ```
 
 ---
 
-## 🎨 Passo 2: Atualizar `pessoas.component.ts`
-
-Substitua o conteúdo por:
+## 2. 🌎 Registre o locale brasileiro no `main.ts`
 
 ```ts
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
+registerLocaleData(localePt);
+```
+
+---
+
+## 3. ⚙️ Configure o `app.config.ts`
+
+```ts
+import { ApplicationConfig, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideNativeDateAdapter, MAT_NATIVE_DATE_FORMATS, MAT_DATE_FORMATS } from '@angular/material/core';
+
+import { routes } from './app.routes';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideNgxMask } from 'ngx-mask';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes),
+  provideAnimations(),
+  provideNativeDateAdapter(),
+  { provide: MAT_DATE_FORMATS, useValue: MAT_NATIVE_DATE_FORMATS },
+  { provide: LOCALE_ID, useValue: 'pt-BR' },
+  provideNgxMask(),
+  ]
+};
+```
+
+---
+
+## 4. 🧩 Componente `novo-lancamento.component.ts`
+
+```ts
+import { Component, signal } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatDatepickerModule} from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatSelectModule} from '@angular/material/select';
+import {MatInputModule} from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatNativeDateModule, MatOptionModule } from '@angular/material/core';
+import { NgxMaskDirective } from 'ngx-mask';
+import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-pessoas',
-  imports: [FormsModule,
-    CommonModule,
-    MatPaginatorModule,
-    MatIconModule,
+  selector: 'app-lancamento-cadastro',
+  imports: [
+    FormsModule,
+    RouterModule,
+    ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatButtonModule,
-    MatTableModule,
-    MatTooltipModule],
-  templateUrl: './pessoas.component.html',
-  styleUrl: './pessoas.component.scss'
+    MatButtonToggleModule,
+    NgxMaskDirective],
+  templateUrl: './lancamento-cadastro.component.html',
+  styleUrl: './lancamento-cadastro.component.scss'
 })
-export class PessoasComponent implements OnInit, AfterViewInit {
-  nome = '';
+export class LancamentoCadastroComponent {
+  form: FormGroup;
+  tipoLancamento = signal<'receita' | 'despesa'>('receita');
 
-  colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
+  categorias = ['Salário', 'Aluguel', 'Transporte'];
+  pessoas = ['João', 'Maria', 'Carlos'];
 
-  pessoas = [
-    { nome: 'Henrique Medeiros', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
-    { nome: 'Juliana Costa', cidade: 'Manaus', estado: 'AM', status: 'Ativo' },
-    { nome: 'Roberto Lima', cidade: 'Parintins', estado: 'AM', status: 'Inativo' },
-    { nome: 'Ana Paula Souza', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
-    { nome: 'Marcos Vinícius', cidade: 'Tefé', estado: 'AM', status: 'Ativo' },
-    { nome: 'Larissa Oliveira', cidade: 'Coari', estado: 'AM', status: 'Inativo' },
-    { nome: 'Carlos Henrique', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
-    { nome: 'Fernanda Andrade', cidade: 'Manacapuru', estado: 'AM', status: 'Ativo' },
-    { nome: 'João Victor Mendes', cidade: 'Tabatinga', estado: 'AM', status: 'Inativo' },
-    { nome: 'Patrícia Ramos', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' }
-  ];
+  constructor(private fb: FormBuilder) {
+    this.form = this.fb.group({
+      vencimento: ['', Validators.required],
+      recebimento: [''],
+      descricao: ['', Validators.required],
+      valor: [0, Validators.required],
+      categoria: ['', Validators.required],
+      pessoa: ['', Validators.required],
+      observacao: ['']
+    });
+  }
 
-  dataSource = new MatTableDataSource(this.pessoas);
+  salvar() {
+    if (this.form.valid) {
+      console.log('Dados salvos:', this.form.value);
+    }
+  }
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+  novo() {
+    this.form.reset({ valor: 0 });
+    this.tipoLancamento.set('receita');
   }
 }
 ```
 
 ---
 
-## 🧾 Passo 3: Criar o HTML do componente
-
-Edite `**lancamentos.component.html**`:
+## 5. 🖼 HTML: `novo-lancamento.component.html`
 
 ```html
-<div class="container">
-  <h1><b>Pessoas</b></h1>
+<div class="form-container">
+  <h2>Novo lançamento</h2>
 
-  <mat-form-field appearance="fill" class="campo-nome">
-    <mat-label>Nome</mat-label>
-    <input matInput [(ngModel)]="nome" placeholder="Digite o nome">
-  </mat-form-field>
+  <mat-button-toggle-group class="button-toggle-group" [(ngModel)]="tipoLancamento" name="tipoLancamento" aria-label="Tipo de lançamento">
+    <mat-button-toggle value="receita">Receita</mat-button-toggle>
+    <mat-button-toggle value="despesa">Despesa</mat-button-toggle>
+  </mat-button-toggle-group>
 
-  <button mat-raised-button color="primary" class="botao-pesquisar">
-    Pesquisar
-  </button>
-</div>
+  <form [formGroup]="form">
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Vencimento</mat-label>
+        <input matInput [matDatepicker]="vencimentoPicker" formControlName="vencimento">
+        <mat-datepicker-toggle matSuffix [for]="vencimentoPicker"></mat-datepicker-toggle>
+        <mat-datepicker #vencimentoPicker></mat-datepicker>
+      </mat-form-field>
 
-<!-- Tabela de Dados -->
-<div class="tabela-container">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+      <mat-form-field appearance="outline">
+        <mat-label>Recebimento</mat-label>
+        <input matInput [matDatepicker]="recebimentoPicker" formControlName="recebimento">
+        <mat-datepicker-toggle matSuffix [for]="recebimentoPicker"></mat-datepicker-toggle>
+        <mat-datepicker #recebimentoPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
 
-    <!-- Coluna: Nome -->
-    <ng-container matColumnDef="nome">
-      <th mat-header-cell *matHeaderCellDef> Nome </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.nome }} </td>
-    </ng-container>
+    <div class="row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descrição</mat-label>
+        <input matInput formControlName="descricao">
+      </mat-form-field>
 
-    <!-- Coluna: Cidade -->
-    <ng-container matColumnDef="cidade">
-      <th mat-header-cell *matHeaderCellDef> Cidade </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.cidade }} </td>
-    </ng-container>
+      <mat-form-field appearance="outline">
+        <mat-label>Valor</mat-label>
+        <input matInput
+         formControlName="valor"
+         type="text"
+         mask="separator.2"
+         thousandSeparator="."
+         decimalMarker=","
+         prefix="R$ " />
+      </mat-form-field>
+    </div>
 
-    <!-- Coluna: Vencimento -->
-    <ng-container matColumnDef="estado">
-      <th mat-header-cell *matHeaderCellDef> Estado </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.estado }} </td>
-    </ng-container>
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Categoria</mat-label>
+        <mat-select formControlName="categoria">
+          @for (categoria of categorias; track categoria;) {
+            <mat-option [value]="categoria">{{ categoria }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
-    <!-- Coluna: Pagamento -->
-    <ng-container matColumnDef="status">
-      <th mat-header-cell *matHeaderCellDef> Status </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.status }} </td>
-    </ng-container>
+      <mat-form-field appearance="outline">
+        <mat-label>Pessoa</mat-label>
+        <mat-select formControlName="pessoa">
+          @for (pessoa of pessoas; track pessoa;) {
+            <mat-option [value]="pessoa">{{ pessoa }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
 
-    <!-- Coluna: Ações -->
-    <ng-container matColumnDef="acoes">
-      <th mat-header-cell *matHeaderCellDef> Ações </th>
-      <td mat-cell *matCellDef="let lanc">
-        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button color="warn" matTooltip="Excluir" matTooltipPosition="above">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </td>
-    </ng-container>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Observação</mat-label>
+      <textarea matInput formControlName="observacao"></textarea>
+    </mat-form-field>
 
-    <!-- Cabeçalho e Linhas -->
-    <tr mat-header-row *matHeaderRowDef="colunas"></tr>
-    <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
-  </table>
-
-  <!-- Paginação -->
-  <mat-paginator [length]="pessoas.length"
-                 [pageSize]="3"
-                 [pageSizeOptions]="[3, 10, 20]"
-                 showFirstLastButtons>
-  </mat-paginator>
-</div>
-
-<div class="container">
-  <button mat-raised-button color="primary">Novo pessoa</button>
+    <div class="buttons">
+      <button mat-raised-button color="primary" (click)="salvar()">Salvar</button>
+      <button mat-stroked-button color="accent" (click)="novo()">Novo</button>
+      <a mat-button routerLink="/lancamentos">Voltar para a pesquisa</a>
+    </div>
+  </form>
 </div>
 ```
 
 ---
 
-## 🎨 Passo 4: Configure os estilos em CSS (SCSS) 
-
-Edite `**lancamentos.component.scss**`:
+## 6. 🎨 CSS: `novo-lancamento.component.scss`
 
 ```scss
-.container {
-  padding: 24px;
-  width: 95%;
+.form-container {
+  max-width: 800px;
+  margin: auto;
 
-  @media (min-width: 1600px) {
-    width: 70%;
+  .button-toggle-group {
+    margin-bottom: 16px;
   }
 
-  h1 {
-    font-weight: bold;
+  .row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
   }
 
-  .campo-nome {
-    width: 100%;
+  .full-width {
+    flex: 1;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 16px;
     margin-top: 16px;
   }
-
-  .botao-pesquisar {
-    margin-top: 16px;
-  }
-}
-
-.tabela-container {
-  margin: 24px;
-  width: 95%;
-  overflow-x: auto;
 }
 ```
 
 ---
 
-## 🛠️ Passo 5: Configurar as rotas
+## 7. Adicione o routerLink no `src\app\lancamentos\lancamentos.component.html`
 
-Edite o arquivo `src/app/app.routes.ts`:
+```html
 
-```ts
-import { Routes } from '@angular/router';
-import { LancamentosComponent } from './lancamentos/lancamentos.component';
-import { LayoutComponent } from './layout/layout.component';
-import { PessoasComponent } from './pessoas/pessoas/pessoas.component';
-
-export const routes: Routes = [
-  {
-    path: '',
-    component: LayoutComponent,
-    children: [
-      { path: '', redirectTo: 'lancamentos', pathMatch: 'full' },
-      { path: 'pessoas', component: PessoasComponent },
-      { path: 'lancamentos', component: LancamentosComponent },
-    ]
-  },
-  { path: '**', redirectTo: '', pathMatch: 'full' }
-];
+<div class="container">
+  <button mat-raised-button color="primary" routerLink="/novo-lancamentos">Novo lançamento</button>
+</div>
 ```
 
 ---
 
-## 🖥️ Passo 6: Executar o projeto
+## ✅ Pronto!
 
-```bash
-ng serve
-```
-
-Acesse [http://localhost:4200](http://localhost:4200)
-
-
-Se ocorrer `Error: EBUSY`
-
-```bash
-npm cache clean
-
-npm install --cache
-```
+Seu formulário "Novo lançamento" está agora com:
+- Material Design
+- Máscara de moeda (R$)
+- Datas no padrão brasileiro (com `pt-BR`)
 
 ---
 
 ## 🖍️ Passo 7: Salve no repositório Github
 
-
-```bash
+```sh
 git add .
-git commit -m "Adicionando o formulário de pesquisa de pessoas"
+git commit -m "Formulário Novo Lançamento"
 git push -u origin main
 ```

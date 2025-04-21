@@ -1,7 +1,12 @@
-.sidenav-container {
-  height: 90vh;
-}
+.layout {
+  max-width: 1200px;
+  margin: auto;
 
-.content {
-  padding: 24px;
+  .sidenav-container {
+    height: 90vh;
+  }
+
+  .content {
+    padding: 24px;
+  }
 }

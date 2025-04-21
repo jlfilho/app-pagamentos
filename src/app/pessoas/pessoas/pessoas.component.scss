@@ -1,6 +1,7 @@
 .container {
   padding: 24px;
-  width: 95%;
+  max-width: 800px;
+  margin: auto;
 
   @media (min-width: 1600px) {
     width: 70%;
@@ -22,6 +23,7 @@
 
 .tabela-container {
   margin: 24px;
-  width: 95%;
+  max-width: 800px;
+  margin: auto;
   overflow-x: auto;
 }

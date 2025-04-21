@@ -27,11 +27,12 @@ export class PessoaCadastroComponent {
       numero: ['', Validators.required],
       complemento: [''],
       bairro: ['', Validators.required],
-      cep: ['', [Validators.required, Validators.pattern(/^\d{5}-\d{3}$/)]],
+      cep: ['', Validators.required],
       cidade: ['', Validators.required],
       estado: ['', Validators.required],
      });
   }
+
 
   salvar() {
     if (this.form.valid) {

@@ -1,25 +1,24 @@
-# ✅ Tutorial — Criando Componente Filho para a Tabela de Lançamentos
+# ✅ Tutorial — Criando Componente Filho para a Tabela de Pessoas
 
-Neste tutorial, vamos criar um componente filho responsável por exibir os lançamentos financeiros em formato de tabela, utilizando Angular Material.
+Neste tutorial, você aprenderá a criar um componente filho responsável por exibir os dados das pessoas cadastradas em uma tabela, utilizando o Angular Material.
 
 ---
 
-## 🧱 1. Criar o Componente `lancamentos-table`
+## 🧱 1. Criar o Componente `pessoas-table`
 
-No terminal, execute:
+Execute no terminal o comando abaixo para gerar o componente:
 
 ```bash
-ng g c lancamentos-table
+ng g c pessoas-table
 ```
 
 ---
 
-## 🛠️ 2. Atualizar o Componente Filho (`lancamentos-table.component.ts`)
+## 🛠️ 2. Atualizar o Componente Filho (`pessoas-table.component.ts`)
 
-Modifique o componente para receber um `MatTableDataSource` como `@Input()`:
+Atualize o componente gerado para receber um `MatTableDataSource` por meio de um `@Input()`:
 
 ```ts
-import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, Input, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,23 +27,22 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-  selector: 'app-lancamentos-table',
+  selector: 'app-pessoas-table',
   standalone: true,
   imports: [
-    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
   ],
-  templateUrl: './lancamentos-table.component.html',
-  styleUrl: './lancamentos-table.component.scss'
+  templateUrl: './pessoas-table.component.html',
+  styleUrl: './pessoas-table.component.scss'
 })
-export class LancamentosTableComponent implements AfterViewInit {
+export class PessoasTableComponent implements AfterViewInit {
   @Input() dataSource!: MatTableDataSource<any>;
 
-  colunas: string[] = ['pessoa', 'descricao', 'vencimento', 'pagamento', 'valor', 'acoes'];
+  colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -58,89 +56,84 @@ export class LancamentosTableComponent implements AfterViewInit {
 
 ---
 
-## 👨‍💻 3. Atualizar o Componente Pai (`lancamentos.component.ts`)
+## 👨‍💻 3. Atualizar o Componente Pai (`pessoas.component.ts`)
 
 ```ts
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { RouterModule } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatTableDataSource } from '@angular/material/table';
-import { LancamentosTableComponent } from '../lancamentos-table/lancamentos-table.component';
+import { RouterModule } from '@angular/router';
+import { PessoasTableComponent } from '../../pessoas-table/pessoas-table.component';
 
 @Component({
-  selector: 'app-lancamentos',
+  selector: 'app-pessoas',
   standalone: true,
   imports: [
     FormsModule,
+    CommonModule,
+    RouterModule,
+    MatIconModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    RouterModule,
-    LancamentosTableComponent
+    PessoasTableComponent
   ],
-  templateUrl: './lancamentos.component.html',
-  styleUrl: './lancamentos.component.scss'
+  templateUrl: './pessoas.component.html',
+  styleUrl: './pessoas.component.scss'
 })
-export class LancamentosComponent {
-  descricao = '';
-  vencimentoInicio = '';
-  vencimentoFim = '';
+export class PessoasComponent {
+  nome = '';
 
-  lancamentos = [
-    { tipo: 'RECEITA', pessoa: 'Henrique Medeiros', descricao: 'Bahamas', vencimento: '10/06/2017', pagamento: null, valor: 500.00 },
-    { tipo: 'DESPESA', pessoa: 'Josué Mariano', descricao: 'Café', vencimento: '10/06/2017', pagamento: null, valor: 8.32 },
-    { tipo: 'RECEITA', pessoa: 'Maria Rita', descricao: 'Bahamas', vencimento: '10/02/2017', pagamento: '10/02/2017', valor: 100.32 },
-    { tipo: 'RECEITA', pessoa: 'Pedro Santos', descricao: 'Top Club', vencimento: '10/06/2017', pagamento: null, valor: 120.00 },
-    { tipo: 'RECEITA', pessoa: 'Ricardo Pereira', descricao: 'CEMIG', vencimento: '10/02/2017', pagamento: '10/02/2017', valor: 110.44 }
+  pessoas = [
+    { nome: 'Henrique Medeiros', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
+    { nome: 'Juliana Costa', cidade: 'Manaus', estado: 'AM', status: 'Ativo' },
+    { nome: 'Roberto Lima', cidade: 'Parintins', estado: 'AM', status: 'Inativo' },
+    { nome: 'Ana Paula Souza', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
+    { nome: 'Marcos Vinícius', cidade: 'Tefé', estado: 'AM', status: 'Ativo' },
+    { nome: 'Larissa Oliveira', cidade: 'Coari', estado: 'AM', status: 'Inativo' },
+    { nome: 'Carlos Henrique', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
+    { nome: 'Fernanda Andrade', cidade: 'Manacapuru', estado: 'AM', status: 'Ativo' },
+    { nome: 'João Victor Mendes', cidade: 'Tabatinga', estado: 'AM', status: 'Inativo' },
+    { nome: 'Patrícia Ramos', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' }
   ];
 
-  dataSource = new MatTableDataSource(this.lancamentos);
+  dataSource = new MatTableDataSource(this.pessoas);
 }
 ```
 
 ---
 
-## 🧾 4. Atualizar o Template do Componente Pai (`lancamentos.component.html`)
+## 🧾 4. Atualizar o Template do Componente Pai (`pessoas.component.html`)
 
 ```html
 <div class="container">
-  <h1><b>Lançamentos</b></h1>
+  <h1><b>Pessoas</b></h1>
 
-  <mat-form-field appearance="fill" class="campo-descricao">
-    <mat-label>Descrição</mat-label>
-    <input matInput [(ngModel)]="descricao" placeholder="Digite a descrição" />
+  <mat-form-field appearance="fill" class="campo-nome">
+    <mat-label>Nome</mat-label>
+    <input matInput [(ngModel)]="nome" placeholder="Digite o nome" />
   </mat-form-field>
-
-  <div class="grupo-vencimento">
-    <mat-form-field appearance="fill" class="campo-vencimento">
-      <mat-label>Vencimento</mat-label>
-      <input matInput [(ngModel)]="vencimentoInicio" placeholder="De" />
-    </mat-form-field>
-
-    <mat-form-field appearance="fill" class="campo-vencimento">
-      <mat-label>Até</mat-label>
-      <input matInput [(ngModel)]="vencimentoFim" placeholder="Até" />
-    </mat-form-field>
-  </div>
 
   <button mat-raised-button color="primary" class="botao-pesquisar">
     Pesquisar
   </button>
 
-  <app-lancamentos-table [dataSource]="dataSource"></app-lancamentos-table>
+  <app-pessoas-table [dataSource]="dataSource"></app-pessoas-table>
 
-  <button mat-raised-button color="primary" routerLink="/novo-lancamento">
-    Novo lançamento
+  <button mat-raised-button color="primary" routerLink="/nova-pessoa">
+    Nova pessoa
   </button>
 </div>
 ```
 
 ---
 
-## 🎨 5. Estilização do Componente Pai (`lancamentos.component.scss`)
+## 🎨 5. Estilização do Componente Pai (`pessoas.component.scss`)
 
 ```scss
 .container {
@@ -156,19 +149,9 @@ export class LancamentosComponent {
     font-weight: bold;
   }
 
-  .campo-descricao {
+  .campo-nome {
     width: 100%;
     margin-top: 16px;
-  }
-
-  .grupo-vencimento {
-    display: flex;
-    gap: 16px;
-    margin-top: 16px;
-
-    .campo-vencimento {
-      flex: 1;
-    }
   }
 
   .botao-pesquisar {
@@ -179,43 +162,40 @@ export class LancamentosComponent {
 
 ---
 
-## 📊 6. Atualizar o HTML do Componente Filho (`lancamentos-table.component.html`)
+## 📊 6. Atualizar o HTML do Componente Filho (`pessoas-table.component.html`)
 
 ```html
 <div class="tabela-container">
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
-    <!-- Colunas -->
-    <ng-container matColumnDef="pessoa">
-      <th mat-header-cell *matHeaderCellDef>Pessoa</th>
-      <td mat-cell *matCellDef="let lanc">{{ lanc.pessoa }}</td>
+    <!-- Coluna: Nome -->
+    <ng-container matColumnDef="nome">
+      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.nome }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="descricao">
-      <th mat-header-cell *matHeaderCellDef>Descrição</th>
-      <td mat-cell *matCellDef="let lanc">{{ lanc.descricao }}</td>
+    <!-- Coluna: Cidade -->
+    <ng-container matColumnDef="cidade">
+      <th mat-header-cell *matHeaderCellDef>Cidade</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.cidade }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="vencimento">
-      <th mat-header-cell *matHeaderCellDef>Vencimento</th>
-      <td mat-cell *matCellDef="let lanc">{{ lanc.vencimento }}</td>
+    <!-- Coluna: Estado -->
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef>Estado</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.estado }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="pagamento">
-      <th mat-header-cell *matHeaderCellDef>Pagamento</th>
-      <td mat-cell *matCellDef="let lanc">{{ lanc.pagamento || '-' }}</td>
+    <!-- Coluna: Status -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.status }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="valor">
-      <th mat-header-cell *matHeaderCellDef>Valor</th>
-      <td mat-cell *matCellDef="let lanc" [ngStyle]="{ color: lanc.tipo === 'DESPESA' ? 'red' : 'blue' }">
-        {{ lanc.valor | currency:'BRL' }}
-      </td>
-    </ng-container>
-
+    <!-- Coluna: Ações -->
     <ng-container matColumnDef="acoes">
       <th mat-header-cell *matHeaderCellDef>Ações</th>
-      <td mat-cell *matCellDef="let lanc">
+      <td mat-cell *matCellDef="let pessoa">
         <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above">
           <mat-icon>edit</mat-icon>
         </button>
@@ -225,12 +205,10 @@ export class LancamentosComponent {
       </td>
     </ng-container>
 
-    <!-- Cabeçalho e linhas -->
     <tr mat-header-row *matHeaderRowDef="colunas"></tr>
     <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
   </table>
 
-  <!-- Paginação -->
   <mat-paginator
     [length]="dataSource.data.length"
     [pageSize]="3"
@@ -242,7 +220,7 @@ export class LancamentosComponent {
 
 ---
 
-## 🎨 7. Estilização do Componente Filho (`lancamentos-table.component.scss`)
+## 🎨 7. Estilização do Componente Filho (`pessoas-table.component.scss`)
 
 ```scss
 .tabela-container {
@@ -257,8 +235,10 @@ export class LancamentosComponent {
 
 ## 💾 8. Salvar e Enviar ao GitHub
 
+Após aplicar todas as alterações, salve e envie os arquivos para o repositório:
+
 ```bash
 git add .
-git commit -m "Criação do componente filho de tabela de lançamentos"
+git commit -m "Criação do componente filho de tabela de pessoas"
 git push -u origin main
 ```

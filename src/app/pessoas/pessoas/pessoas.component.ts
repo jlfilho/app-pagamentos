@@ -1,34 +1,30 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableDataSource } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
+import { PessoaCadastroComponent } from "../../pessoa-cadastro/pessoa-cadastro.component";
+import { PessoasTableComponent } from '../../pessoas-table/pessoas-table.component';
 
 @Component({
   selector: 'app-pessoas',
   imports: [FormsModule,
     CommonModule,
     RouterModule,
-    MatPaginatorModule,
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatTableModule,
-    MatTooltipModule],
+    PessoasTableComponent],
   templateUrl: './pessoas.component.html',
   styleUrl: './pessoas.component.scss'
 })
-export class PessoasComponent implements OnInit, AfterViewInit {
+export class PessoasComponent {
   nome = '';
-
-  colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
 
   pessoas = [
     { nome: 'Henrique Medeiros', cidade: 'Itacoatiara', estado: 'AM', status: 'Ativo' },
@@ -45,11 +41,4 @@ export class PessoasComponent implements OnInit, AfterViewInit {
 
   dataSource = new MatTableDataSource(this.pessoas);
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-  }
 }

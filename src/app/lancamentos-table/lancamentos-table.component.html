@@ -1,6 +1,6 @@
 <!-- Tabela de Dados -->
 <div class="tabela-container">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+  <table mat-table [dataSource]="lancamentos" class="mat-elevation-z8">
 
     <!-- Coluna: Pessoa -->
     <ng-container matColumnDef="pessoa">
@@ -17,13 +17,13 @@
     <!-- Coluna: Vencimento -->
     <ng-container matColumnDef="vencimento">
       <th mat-header-cell *matHeaderCellDef> Vencimento </th>
-      <td mat-cell *matCellDef="let lanc"> {{ lanc.vencimento }} </td>
+      <td mat-cell *matCellDef="let lanc"> {{ lanc.dataVencimento | date:'dd/MM/yyyy' }} </td>
     </ng-container>
 
     <!-- Coluna: Pagamento -->
     <ng-container matColumnDef="pagamento">
       <th mat-header-cell *matHeaderCellDef> Pagamento </th>
-      <td mat-cell *matCellDef="let lanc"> {{ lanc.pagamento || '-' }} </td>
+      <td mat-cell *matCellDef="let lanc"> {{ lanc.dataPagamento ? (lanc.dataPagamento | date:'dd/MM/yyyy') : '-' }} </td>
     </ng-container>
 
     <!-- Coluna: Valor -->
@@ -51,11 +51,4 @@
     <tr mat-header-row *matHeaderRowDef="colunas"></tr>
     <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
   </table>
-
-  <!-- Paginação -->
-  <mat-paginator [length]="dataSource.data.length"
-                 [pageSize]="3"
-                 [pageSizeOptions]="[3, 10, 20]"
-                 showFirstLastButtons>
-  </mat-paginator>
 </div>

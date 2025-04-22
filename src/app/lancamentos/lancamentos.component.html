@@ -1,31 +1,45 @@
 <div class="container">
   <h1><b>Lançamentos</b></h1>
 
-  <mat-form-field appearance="fill" class="campo-descricao">
+  <mat-form-field appearance="outline" class="campo-descricao">
     <mat-label>Descrição</mat-label>
-    <input matInput [(ngModel)]="descricao" placeholder="Digite a descrição">
+    <input (keyup)="pesquisar()" matInput [(ngModel)]="filtro().descricao" placeholder="Digite a descrição">
   </mat-form-field>
 
   <div class="grupo-vencimento">
-    <mat-form-field appearance="fill" class="campo-vencimento">
-      <mat-label>Vencimento</mat-label>
-      <input matInput [(ngModel)]="vencimentoInicio" placeholder="De">
+    <mat-form-field appearance="outline" class="campo45">
+      <mat-label>Vencimento de</mat-label>
+      <input matInput [matDatepicker]="vencimentoPicker" [(ngModel)]="filtro().dataVencimentoDe" placeholder="De" readonly>
+      <mat-datepicker-toggle matSuffix [for]="vencimentoPicker"></mat-datepicker-toggle>
+      <mat-datepicker #vencimentoPicker></mat-datepicker>
     </mat-form-field>
 
-    <mat-form-field appearance="fill" class="campo-vencimento">
-      <mat-label>até</mat-label>
-      <input matInput [(ngModel)]="vencimentoFim" placeholder="Até">
+    <mat-form-field appearance="outline" class="campo45">
+      <mat-label>Vencimento até</mat-label>
+      <input matInput [matDatepicker]="recebimentoPicker" [(ngModel)]="filtro().dataVencimentoAte" placeholder="Até" readonly>
+      <mat-datepicker-toggle matSuffix [for]="recebimentoPicker"></mat-datepicker-toggle>
+      <mat-datepicker #recebimentoPicker></mat-datepicker>
     </mat-form-field>
   </div>
 
-  <button mat-raised-button color="primary" class="botao-pesquisar">
+  <button mat-raised-button color="primary" class="botao-pesquisar"
+  (click)="pesquisar()">
     Pesquisar
   </button>
 
-  <app-lancamentos-table [dataSource]="dataSource"></app-lancamentos-table>
+  <app-lancamentos-table [lancamentos]="lancamentos()"></app-lancamentos-table>
+
+    <!-- Paginação -->
+    <mat-paginator
+      [length]="totalElements()"
+      [pageSize]="filtro().size"
+      [pageIndex]="paginaAtual()"
+      [pageSizeOptions]="[5, 10, 15]"
+      showFirstLastButtons
+      (page)="aoMudarPagina($event)">
+    </mat-paginator>
 
   <button mat-raised-button color="primary" routerLink="/novo-lancamento">
     Novo lançamento
   </button>
 </div>
-

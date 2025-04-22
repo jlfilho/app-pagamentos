@@ -1,16 +1,27 @@
 <div class="container">
   <h1><b>Pessoas</b></h1>
 
-  <mat-form-field appearance="fill" class="campo-nome">
+  <mat-form-field appearance="outline" class="campo-nome">
     <mat-label>Nome</mat-label>
-    <input matInput [(ngModel)]="nome" placeholder="Digite o nome">
+    <input (keyup)="pesquisar()" matInput [(ngModel)]="filtro().nome" placeholder="Digite o nome">
   </mat-form-field>
 
-  <button mat-raised-button color="primary" class="botao-pesquisar">
+  <button mat-raised-button color="primary" class="botao-pesquisar"
+  (click)="pesquisar()">
     Pesquisar
   </button>
 
-  <app-pessoas-table [dataSource]="dataSource"></app-pessoas-table>
+  <app-pessoas-table [pessoas]="pessoas()"></app-pessoas-table>
+
+  <!-- Paginação -->
+  <mat-paginator
+    [length]="totalElements()"
+    [pageSize]="filtro().size"
+    [pageIndex]="paginaAtual()"
+    [pageSizeOptions]="[5, 10, 15]"
+    showFirstLastButtons
+    (page)="aoMudarPagina($event)">
+  </mat-paginator>
 
   <button mat-raised-button color="primary" routerLink="/nova-pessoa">Novo pessoa</button>
 </div>

@@ -1,6 +1,6 @@
 <!-- Tabela de Dados -->
 <div class="tabela-container">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+  <table mat-table [dataSource]="pessoas" class="mat-elevation-z8">
 
     <!-- Coluna: Nome -->
     <ng-container matColumnDef="nome">
@@ -11,19 +11,19 @@
     <!-- Coluna: Cidade -->
     <ng-container matColumnDef="cidade">
       <th mat-header-cell *matHeaderCellDef> Cidade </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.cidade }} </td>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.endereco.cidade }} </td>
     </ng-container>
 
     <!-- Coluna: Vencimento -->
     <ng-container matColumnDef="estado">
       <th mat-header-cell *matHeaderCellDef> Estado </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.estado }} </td>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.endereco.estado }} </td>
     </ng-container>
 
     <!-- Coluna: Pagamento -->
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef> Status </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.status }} </td>
+      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.ativo ? "Ativo" : "Desativado" }} </td>
     </ng-container>
 
     <!-- Coluna: Ações -->
@@ -43,11 +43,4 @@
     <tr mat-header-row *matHeaderRowDef="colunas"></tr>
     <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
   </table>
-
-  <!-- Paginação -->
-  <mat-paginator [length]="dataSource.data.length"
-                 [pageSize]="3"
-                 [pageSizeOptions]="[3, 10, 20]"
-                 showFirstLastButtons>
-  </mat-paginator>
 </div>

@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { PessoaFiltro } from '../models/pessoa-filtro';
 import { Observable } from 'rxjs';
+import { Pessoa } from '../models/pessoa.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { Observable } from 'rxjs';
 export class PessoasService {
 
   // JWT hardcoded por enquanto
-  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ1Mjk5MDEzLCJleHAiOjE3NDUzMDI2MTN9.HRsFE-wwmjruEzhIdxRCc_DyZjjnP_gIhiE7mYVZLzI';
+  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5NjcyNjY0LCJleHAiOjE3NDk2NzYyNjR9.twxl6xANAH4pMTwRbQhu2tJeCaoszMvruOeYSVklaQg';
 
   private readonly apiUrl = 'http://localhost:8080/pessoas'; // ajuste para o seu backend
 
@@ -32,4 +33,36 @@ export class PessoasService {
 
     return this.http.get<any>(this.apiUrl, { params, headers });
   }
+
+  criarPessoa(pessoa: Pessoa): Observable<Pessoa> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.jwtToken}`
+    });
+
+    return this.http.post<Pessoa>(this.apiUrl, pessoa, { headers });
+  }
+
+  atualizarPessoa(codigo: number, pessoa: Pessoa): Observable<Pessoa> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.jwtToken}`
+    });
+    return this.http.put<Pessoa>(`${this.apiUrl}/${codigo}`, pessoa, { headers });
+  }
+
+  deletarPessoa(codigo: number): Observable<void> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.jwtToken}`
+    });
+    const url = `${this.apiUrl}/${codigo}`;
+    return this.http.delete<void>(url, { headers });
+  }
+
+  atualizarStatusAtivo(codigo: number, ativo: boolean): Observable<Pessoa> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.jwtToken}`
+    });
+    const url = `${this.apiUrl}/${codigo}/ativo`;
+    return this.http.patch<Pessoa>(url, ativo, { headers });
+  }
+
 }

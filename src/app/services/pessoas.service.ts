@@ -10,7 +10,7 @@ import { Pessoa } from '../models/pessoa.model';
 export class PessoasService {
 
   // JWT hardcoded por enquanto
-  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5NjcyNjY0LCJleHAiOjE3NDk2NzYyNjR9.twxl6xANAH4pMTwRbQhu2tJeCaoszMvruOeYSVklaQg';
+  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5Njc1MTcwLCJleHAiOjE3NDk2Nzg3NzB9.7UZ9p_pC3x_TzQVYunpZJ2B-xk21XZLDdSdYGrLOnf8';
 
   private readonly apiUrl = 'http://localhost:8080/pessoas'; // ajuste para o seu backend
 
@@ -38,6 +38,7 @@ export class PessoasService {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.jwtToken}`
     });
+    console.log(JSON.stringify(pessoa, null, 2));
 
     return this.http.post<Pessoa>(this.apiUrl, pessoa, { headers });
   }

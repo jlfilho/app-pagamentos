@@ -58,13 +58,15 @@
         <input matInput
          type="text"
          formControlName="cep"
-         mask="00.000-000"
-         placeholder="00.000-000" />
+         mask="00000-000"
+         placeholder="00000-000"
+         [dropSpecialCharacters]="false" />
          @if (form.get('cep')?.hasError('required') && form.get('cep')?.touched) {
           <mat-error>
             Cep é obrigatório.
           </mat-error>
         }
+
       </mat-form-field>
     </div>
 
@@ -80,12 +82,21 @@
       </mat-form-field>
       <mat-form-field appearance="outline" class="campo45">
         <mat-label>Estado</mat-label>
-        <input matInput formControlName="estado" />
+        <input matInput formControlName="estado" maxlength="2" />
+
         @if (form.get('estado')?.hasError('required') && form.get('estado')?.touched) {
           <mat-error>
             Estado é obrigatório.
           </mat-error>
         }
+        @if (
+    (form.get('estado')?.hasError('minlength') || form.get('estado')?.hasError('maxlength')) &&
+    form.get('estado')?.touched
+  ) {
+    <mat-error>
+      O estado deve conter exatamente 2 letras (ex: AM, SP).
+    </mat-error>
+  }
       </mat-form-field>
     </div>
 

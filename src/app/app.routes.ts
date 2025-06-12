@@ -11,10 +11,12 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: '', redirectTo: 'lancamentos', pathMatch: 'full' },
-      { path: 'pessoas', component: PessoasComponent },
       { path: 'lancamentos', component: LancamentosComponent },
       { path: 'novo-lancamento', component: LancamentoCadastroComponent },
       { path: 'nova-pessoa', component: PessoaCadastroComponent },
+      { path: 'pessoas', component: PessoasComponent },
+      { path: 'pessoas/editar/:codigo',
+        loadComponent: () => import('./pessoa-cadastro/pessoa-cadastro.component').then(m => m.PessoaCadastroComponent)}
     ]
   },
   { path: '**', redirectTo: '', pathMatch: 'full' }

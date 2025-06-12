@@ -1,11 +1,12 @@
 import { PessoasService } from './../services/pessoas.service';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { NgxMaskDirective } from 'ngx-mask';
 import { Pessoa } from '../models/pessoa.model';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-pessoa-cadastro',
@@ -15,16 +16,20 @@ import { Pessoa } from '../models/pessoa.model';
     RouterModule,
     MatInputModule,
     MatButtonModule,
-    NgxMaskDirective],
+    NgxMaskDirective,
+    MatSnackBarModule],
   templateUrl: './pessoa-cadastro.component.html',
   styleUrl: './pessoa-cadastro.component.scss'
 })
-export class PessoaCadastroComponent {
+export class PessoaCadastroComponent implements OnInit{
   form: FormGroup;
+  pessoaSelecionada?: Pessoa;
 
   constructor(
     private fb: FormBuilder,
-    private pessoasService: PessoasService
+    private pessoasService: PessoasService,
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(5)]],
@@ -32,18 +37,42 @@ export class PessoaCadastroComponent {
       numero: ['', [Validators.required, Validators.maxLength(10)]],
       complemento: ['', [Validators.maxLength(255)]],
       bairro: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-      cep: ['', [Validators.required]],
+      cep: ['', [Validators.required, Validators.pattern(/^\d{5}-\d{3}$/)]],
       cidade: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       estado: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
     });
   }
 
+  ngOnInit(): void {
+    const codigo = this.route.snapshot.paramMap.get('codigo');
+    if (codigo) {
+      this.pessoasService.buscarPorCodigo(+codigo).subscribe(p => {
+        this.pessoaSelecionada = p;
+        this.preencherFormulario(p);
+      });
+    }
+  }
 
-  salvar() {
+  preencherFormulario(p: Pessoa) {
+    this.form.patchValue({
+      nome: p.nome,
+      logradouro: p.endereco.logradouro,
+      numero: p.endereco.numero,
+      complemento: p.endereco.complemento,
+      bairro: p.endereco.bairro,
+      cep: p.endereco.cep,
+      cidade: p.endereco.cidade,
+      estado: p.endereco.estado
+    });
+  }
+
+
+   salvar() {
     if (this.form.valid) {
       const pessoa: Pessoa = {
+        codigo: this.pessoaSelecionada?.codigo,
         nome: this.form.value.nome,
-        ativo: true,
+        ativo: this.pessoaSelecionada?.ativo ?? true,
         endereco: {
           logradouro: this.form.value.logradouro,
           numero: this.form.value.numero,
@@ -55,13 +84,30 @@ export class PessoaCadastroComponent {
         }
       };
 
-      this.pessoasService.criarPessoa(pessoa).subscribe({
+      const obs = pessoa.codigo
+        ? this.pessoasService.atualizarPessoa(pessoa.codigo, pessoa)
+        : this.pessoasService.criarPessoa(pessoa);
+
+      obs.subscribe({
         next: (p) => {
-          console.log('Pessoa criada com sucesso:', p);
-          this.novo(); // limpa o formulário
+          const mensagem = pessoa.codigo ? 'Atualizado com sucesso!' : 'Salvo com sucesso!';
+          this.snackBar.open(mensagem, 'Fechar', {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-success']
+          });
+          this.novo();
         },
         error: (e) => {
-          console.error('Erro ao criar pessoa:', e);
+          const mensagem = pessoa.codigo ? 'Erro ao atualizar!' : 'Erro ao Salvar!';
+            this.snackBar.open(mensagem, 'Fechar', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              panelClass: ['snackbar-error']
+            });
+          console.error('Erro ao salvar pessoa:', e);
         }
       });
     }
@@ -69,6 +115,7 @@ export class PessoaCadastroComponent {
 
   novo() {
     this.form.reset();
+    this.pessoaSelecionada = undefined;
   }
 
 }

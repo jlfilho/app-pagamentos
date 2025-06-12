@@ -10,7 +10,7 @@ import { Pessoa } from '../models/pessoa.model';
 export class PessoasService {
 
   // JWT hardcoded por enquanto
-  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5Njc1MTcwLCJleHAiOjE3NDk2Nzg3NzB9.7UZ9p_pC3x_TzQVYunpZJ2B-xk21XZLDdSdYGrLOnf8';
+  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5NjkwNDA3LCJleHAiOjE3NDk2OTQwMDd9.dSmKxMRdTFxHnl46NMhvPR0pUQiXXOiE9U69bC9uoWo';
 
   private readonly apiUrl = 'http://localhost:8080/pessoas'; // ajuste para o seu backend
 
@@ -38,8 +38,6 @@ export class PessoasService {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.jwtToken}`
     });
-    console.log(JSON.stringify(pessoa, null, 2));
-
     return this.http.post<Pessoa>(this.apiUrl, pessoa, { headers });
   }
 
@@ -47,6 +45,7 @@ export class PessoasService {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.jwtToken}`
     });
+    console.log(JSON.stringify(pessoa, null, 2));
     return this.http.put<Pessoa>(`${this.apiUrl}/${codigo}`, pessoa, { headers });
   }
 
@@ -64,6 +63,14 @@ export class PessoasService {
     });
     const url = `${this.apiUrl}/${codigo}/ativo`;
     return this.http.patch<Pessoa>(url, ativo, { headers });
+  }
+
+  buscarPorCodigo(codigo: number): Observable<Pessoa> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.jwtToken}`
+    });
+
+    return this.http.get<Pessoa>(`${this.apiUrl}/${codigo}`, { headers });
   }
 
 }

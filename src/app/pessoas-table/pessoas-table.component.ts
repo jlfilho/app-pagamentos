@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Pessoa } from '../models/pessoa.model';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-pessoas-table',
@@ -12,6 +13,7 @@ import { Pessoa } from '../models/pessoa.model';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
+    RouterModule
   ],
   templateUrl: './pessoas-table.component.html',
   styleUrl: './pessoas-table.component.scss'

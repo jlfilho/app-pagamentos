@@ -66,6 +66,9 @@
             Cep é obrigatório.
           </mat-error>
         }
+        @if (form.get('cep')?.hasError('pattern') && form.get('cep')?.touched) {
+          <mat-error>O CEP deve seguir o formato 00000-000.</mat-error>
+        }
 
       </mat-form-field>
     </div>
@@ -101,7 +104,9 @@
     </div>
 
     <div class="buttons">
-      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="form.invalid">Salvar</button>
+      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="form.invalid">
+        {{ pessoaSelecionada?.codigo ? 'Atualizar' : 'Salvar' }}
+      </button>
       <button mat-stroked-button color="accent" (click)="novo()">Novo</button>
       <a mat-button routerLink="/pessoas">Voltar para a pesquisa</a>
     </div>

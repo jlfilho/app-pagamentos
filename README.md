@@ -1,62 +1,89 @@
-# ✅ Tutorial: Atualizando o Componente `PessoaCadastroComponent` para Salvar Pessoas no Backend
+# ✅ TUTORIAL: Atualizar Pessoa e Exibir SnackBar
 
 ---
 
-## 🎯 Objetivo
+## 1. 🔁 **Configurar a rota para edição**
 
-Atualizar o componente `PessoaCadastroComponent` para:
+No seu arquivo de rotas (`app.routes.ts`):
 
-* Validar corretamente os campos (com base no backend);
-* Chamar a API REST para salvar a pessoa via `PessoasService`;
-* Aplicar máscara no campo CEP;
-* Exibir mensagens de erro apropriadas no formulário.
-
----
-
-## 🧩 Passo 1 – Instalar dependências (se ainda não instalou)
-
-```bash
-npm install ngx-mask
+```ts
+{
+  path: 'pessoas/editar/:codigo',
+  loadComponent: () => import('./pessoa-cadastro/pessoa-cadastro.component').then(m => m.PessoaCadastroComponent)
+}
 ```
 
-Importe o módulo no `main.ts`, `app.config.ts` ou `AppModule`.
+> Essa rota permite abrir a tela de cadastro e carregar os dados da pessoa com base no `:codigo`.
 
 ---
 
-## 🛠️ Passo 2 – Atualizar o TypeScript do componente
+## 2. 🔗 **Botão de editar na tabela**
 
-### 🔄 Substitua o código do `pessoa-cadastro.component.ts` antigo por este:
+Em `pessoas-table.component.html`, adicione no botão de lápis:
+
+```html
+<button mat-icon-button color="primary"
+        matTooltip="Editar"
+        [routerLink]="['/pessoas/editar', pessoa.codigo]">
+  <mat-icon>edit</mat-icon>
+</button>
+```
+- Importe `RouterModule` no seu módulo se ainda não tiver feito isso:
+
+---
+
+## 3. 🧠 **Método no serviço para buscar pessoa por código**
+
+No `PessoasService` (`pessoas.service.ts`):
+
+```ts
+buscarPorCodigo(codigo: number): Observable<Pessoa> {
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${this.jwtToken}`
+  });
+
+  return this.http.get<Pessoa>(`${this.apiUrl}/${codigo}`, { headers });
+}
+```
+
+---
+
+## 4. ✍️ **Atualizar o componente `PessoaCadastroComponent`**
+
 
 ```ts
 import { PessoasService } from './../services/pessoas.service';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { NgxMaskDirective } from 'ngx-mask';
 import { Pessoa } from '../models/pessoa.model';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-pessoa-cadastro',
-  standalone: true,
   imports: [
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
     MatInputModule,
     MatButtonModule,
-    NgxMaskDirective
-  ],
+    NgxMaskDirective,
+    MatSnackBarModule],
   templateUrl: './pessoa-cadastro.component.html',
   styleUrl: './pessoa-cadastro.component.scss'
 })
-export class PessoaCadastroComponent {
+export class PessoaCadastroComponent implements OnInit{
   form: FormGroup;
+  pessoaSelecionada?: Pessoa;
 
   constructor(
     private fb: FormBuilder,
-    private pessoasService: PessoasService
+    private pessoasService: PessoasService,
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(5)]],
@@ -64,17 +91,42 @@ export class PessoaCadastroComponent {
       numero: ['', [Validators.required, Validators.maxLength(10)]],
       complemento: ['', [Validators.maxLength(255)]],
       bairro: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-      cep: ['', [Validators.required]],
+      cep: ['', [Validators.required, Validators.pattern(/^\d{5}-\d{3}$/)]],
       cidade: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       estado: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
     });
   }
 
-  salvar() {
+  ngOnInit(): void {
+    const codigo = this.route.snapshot.paramMap.get('codigo');
+    if (codigo) {
+      this.pessoasService.buscarPorCodigo(+codigo).subscribe(p => {
+        this.pessoaSelecionada = p;
+        this.preencherFormulario(p);
+      });
+    }
+  }
+
+  preencherFormulario(p: Pessoa) {
+    this.form.patchValue({
+      nome: p.nome,
+      logradouro: p.endereco.logradouro,
+      numero: p.endereco.numero,
+      complemento: p.endereco.complemento,
+      bairro: p.endereco.bairro,
+      cep: p.endereco.cep,
+      cidade: p.endereco.cidade,
+      estado: p.endereco.estado
+    });
+  }
+
+
+   salvar() {
     if (this.form.valid) {
       const pessoa: Pessoa = {
+        codigo: this.pessoaSelecionada?.codigo,
         nome: this.form.value.nome,
-        ativo: true,
+        ativo: this.pessoaSelecionada?.ativo ?? true,
         endereco: {
           logradouro: this.form.value.logradouro,
           numero: this.form.value.numero,
@@ -82,17 +134,34 @@ export class PessoaCadastroComponent {
           bairro: this.form.value.bairro,
           cep: this.form.value.cep.trim(),
           cidade: this.form.value.cidade,
-          estado: this.form.value.estado
+          estado: this.form.value.estado,
         }
       };
 
-      this.pessoasService.criarPessoa(pessoa).subscribe({
+      const obs = pessoa.codigo
+        ? this.pessoasService.atualizarPessoa(pessoa.codigo, pessoa)
+        : this.pessoasService.criarPessoa(pessoa);
+
+      obs.subscribe({
         next: (p) => {
-          console.log('Pessoa criada com sucesso:', p);
+          const mensagem = pessoa.codigo ? 'Atualizado com sucesso!' : 'Salvo com sucesso!';
+          this.snackBar.open(mensagem, 'Fechar', {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-success']
+          });
           this.novo();
         },
         error: (e) => {
-          console.error('Erro ao criar pessoa:', e);
+          const mensagem = pessoa.codigo ? 'Erro ao atualizar!' : 'Erro ao Salvar!';
+            this.snackBar.open(mensagem, 'Fechar', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              panelClass: ['snackbar-error']
+            });
+          console.error('Erro ao salvar pessoa:', e);
         }
       });
     }
@@ -100,123 +169,96 @@ export class PessoaCadastroComponent {
 
   novo() {
     this.form.reset();
+    this.pessoaSelecionada = undefined;
   }
+
 }
 ```
 
+
+Já está pronto no seu código. O que ele faz:
+
+* Detecta `:codigo` via `ActivatedRoute`
+* Usa `pessoasService.buscarPorCodigo(...)` para buscar os dados
+* Preenche o formulário com `patchValue`
+* Chama `atualizarPessoa(...)` ou `criarPessoa(...)` baseado na presença do código
+
 ---
 
-## 🎨 Passo 3 – Atualizar o HTML do formulário
+## 5. ✅ **Formulário com botão dinâmico**
 
-### 🔄 Substitua o conteúdo de `pessoa-cadastro.component.html` pelo código abaixo:
-
-> Inclui: validações completas, máscara de CEP, e feedbacks visuais.
+No HTML do formulário (`pessoa-cadastro.component.html`):
 
 ```html
-<div class="form-container">
-  <h2>Nova pessoa</h2>
+<button mat-raised-button color="primary" (click)="salvar()" [disabled]="form.invalid">
+  {{ pessoaSelecionada?.codigo ? 'Atualizar' : 'Salvar' }}
+</button>
+```
 
-  <form [formGroup]="form">
-    <!-- Nome -->
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nome</mat-label>
-      <input matInput formControlName="nome" />
-      @if (form.get('nome')?.hasError('required') && form.get('nome')?.touched) {
-        <mat-error>Nome é obrigatório.</mat-error>
-      }
-      @if (form.get('nome')?.hasError('minlength') && form.get('nome')?.touched) {
-        <mat-error>Nome deve ter no mínimo 5 letras.</mat-error>
-      }
-    </mat-form-field>
+> Isso mostra "Atualizar" quando está editando, e "Salvar" quando for novo.
 
-    <!-- Logradouro e Número -->
-    <div class="row">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Logradouro</mat-label>
-        <input matInput formControlName="logradouro" />
-        @if (form.get('logradouro')?.hasError('required') && form.get('logradouro')?.touched) {
-          <mat-error>Logradouro é obrigatório.</mat-error>
-        }
-      </mat-form-field>
+---
 
-      <mat-form-field appearance="outline">
-        <mat-label>Número</mat-label>
-        <input matInput formControlName="numero" />
-        @if (form.get('numero')?.hasError('required') && form.get('numero')?.touched) {
-          <mat-error>Número é obrigatório.</mat-error>
-        }
-      </mat-form-field>
-    </div>
+## 6. ✅ **Feedback com `MatSnackBar`**
 
-    <!-- Complemento, Bairro, CEP -->
-    <div class="row">
-      <mat-form-field appearance="outline" class="campo35">
-        <mat-label>Complemento</mat-label>
-        <input matInput formControlName="complemento" />
-      </mat-form-field>
+### No `salvar()`:
 
-      <mat-form-field appearance="outline" class="campo35">
-        <mat-label>Bairro</mat-label>
-        <input matInput formControlName="bairro" />
-        @if (form.get('bairro')?.hasError('required') && form.get('bairro')?.touched) {
-          <mat-error>Bairro é obrigatório.</mat-error>
-        }
-      </mat-form-field>
+```ts
+const mensagem = pessoa.codigo ? 'Atualizado com sucesso!' : 'Salvo com sucesso!';
+this.snackBar.open(mensagem, 'Fechar', {
+  duration: 3000,
+  horizontalPosition: 'right',
+  verticalPosition: 'top',
+  panelClass: ['snackbar-success']
+});
+```
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>CEP</mat-label>
-        <input matInput
-          type="text"
-          formControlName="cep"
-          mask="00000-000"
-          placeholder="00000-000"
-          [dropSpecialCharacters]="false" />
-        @if (form.get('cep')?.hasError('required') && form.get('cep')?.touched) {
-          <mat-error>CEP é obrigatório.</mat-error>
-        }
-      </mat-form-field>
-    </div>
+### Em caso de erro:
 
-    <!-- Cidade e Estado -->
-    <div class="row">
-      <mat-form-field appearance="outline" class="campo45">
-        <mat-label>Cidade</mat-label>
-        <input matInput formControlName="cidade" />
-        @if (form.get('cidade')?.hasError('required') && form.get('cidade')?.touched) {
-          <mat-error>Cidade é obrigatória.</mat-error>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="campo45">
-        <mat-label>Estado</mat-label>
-        <input matInput formControlName="estado" maxlength="2" />
-        @if (form.get('estado')?.hasError('required') && form.get('estado')?.touched) {
-          <mat-error>Estado é obrigatório.</mat-error>
-        }
-        @if ((form.get('estado')?.hasError('minlength') || form.get('estado')?.hasError('maxlength')) && form.get('estado')?.touched) {
-          <mat-error>O estado deve conter exatamente 2 letras (ex: AM, SP).</mat-error>
-        }
-      </mat-form-field>
-    </div>
-
-    <!-- Botões -->
-    <div class="buttons">
-      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="form.invalid">Salvar</button>
-      <button mat-stroked-button color="accent" (click)="novo()">Novo</button>
-      <a mat-button routerLink="/pessoas">Voltar para a pesquisa</a>
-    </div>
-  </form>
-</div>
+```ts
+const mensagem = pessoa.codigo ? 'Erro ao atualizar!' : 'Erro ao salvar!';
+this.snackBar.open(mensagem, 'Fechar', {
+  duration: 3000,
+  horizontalPosition: 'right',
+  verticalPosition: 'top',
+  panelClass: ['snackbar-error']
+});
 ```
 
 ---
 
-## ✅ Pronto!
+## 7. 🎨 **Estilo do SnackBar – `styles.scss` global**
 
-Agora o formulário:
+No seu `src/styles.scss`:
 
-* Valida todos os campos conforme as anotações do backend (`@NotBlank`, `@Size`, `@Pattern`);
-* Aplica máscara no campo CEP e envia o valor com hífen (`dropSpecialCharacters=false`);
-* Usa o serviço `PessoasService` para enviar os dados via `POST` para o backend;
-* Limpa o formulário com o botão “Novo”.
+```scss
+@use '@angular/material' as mat;
+
+.snackbar-success {
+  @include mat.snack-bar-overrides((
+    container-color: #4caf50,
+    button-color: white,
+    supporting-text-color: white
+  ));
+}
+
+.snackbar-error {
+  @include mat.snack-bar-overrides((
+    container-color: #f44336,
+    button-color: white,
+    supporting-text-color: white
+  ));
+}
+
+```
+
+---
+
+## 8. 🧪 **Testar**
+
+* Acesse `/pessoas` e clique no botão de lápis
+* Verifique se o formulário é carregado com os dados da pessoa
+* Edite, clique em **Atualizar**
+* Veja a snackbar verde: `"Atualizado com sucesso!"`
+* Tente com erro e veja a snackbar vermelha: `"Erro ao atualizar!"`
 

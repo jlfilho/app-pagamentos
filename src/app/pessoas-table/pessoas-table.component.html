@@ -29,10 +29,12 @@
     <!-- Coluna: Ações -->
     <ng-container matColumnDef="acoes">
       <th mat-header-cell *matHeaderCellDef> Ações </th>
-      <td mat-cell *matCellDef="let lanc">
-        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above">
+      <td mat-cell *matCellDef="let pessoa">
+        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above"
+        [routerLink]="['/pessoas/editar', pessoa.codigo]">
           <mat-icon>edit</mat-icon>
         </button>
+
         <button mat-icon-button color="warn" matTooltip="Excluir" matTooltipPosition="above">
           <mat-icon>delete</mat-icon>
         </button>

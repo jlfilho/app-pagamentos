@@ -1,0 +1,24 @@
+<div class="login-wrapper">
+  <mat-card class="login-card">
+    <h1 class="login-title">Acesso ao Sistema</h1>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="username" type="email" autocomplete="username">
+        <mat-error *ngIf="form.get('username')?.hasError('required')">Obrigatório</mat-error>
+        <mat-error *ngIf="form.get('username')?.hasError('email')">Formato inválido</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Senha</mat-label>
+        <input matInput formControlName="password" type="password" autocomplete="current-password">
+        <mat-error *ngIf="form.get('password')?.hasError('required')">Obrigatório</mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+        Entrar
+      </button>
+    </form>
+  </mat-card>
+</div>

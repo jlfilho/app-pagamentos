@@ -4,11 +4,15 @@ import { LayoutComponent } from './layout/layout.component';
 import { PessoasComponent } from './pessoas/pessoas/pessoas.component';
 import { LancamentoCadastroComponent } from './lancamento-cadastro/lancamento-cadastro.component';
 import { PessoaCadastroComponent } from './pessoa-cadastro/pessoa-cadastro.component';
+import { authGuard } from './services/auth.guard';
+import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
+  { path: 'login', component: LoginComponent },
   {
     path: '',
     component: LayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'lancamentos', pathMatch: 'full' },
       { path: 'lancamentos', component: LancamentosComponent },

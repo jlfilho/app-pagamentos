@@ -7,7 +7,6 @@ import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, Ma
   imports: [
     MatButtonModule,
     MatDialogActions,
-    MatDialogClose,
     MatDialogTitle,
     MatDialogContent],
   templateUrl: './confirmacao-dialog.component.html',

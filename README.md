@@ -1,110 +1,124 @@
+# 🧾 Tutorial: Implementação de Diálogo de Confirmação com Angular Material para Exclusão de Pessoa
 
-# Tutorial: Implementação de Exclusão de Pessoas 
-
-Este tutorial mostra como implementar a exclusão de registros de pessoas utilizando um componente de tabela separado, `MatSnackBar` para feedback, e `EventEmitter` para comunicação com o componente pai.
+Este tutorial mostra como criar um **componente de diálogo de confirmação reutilizável** com Angular Material e integrá-lo ao fluxo de exclusão de pessoas no seu projeto.
 
 ---
 
-## ✅ 1. Componente de Tabela (`pessoas-table.component.ts`)
+## ✅ 1. Gerar o Componente de Confirmação
 
-### a) Configure `@Input` e `@Output`:
+Execute o comando abaixo no terminal:
+
+```bash
+ng generate component confirmacao-dialog
+```
+
+---
+
+## ✅ 2. Criar o Componente de Diálogo
+
+### `confirmacao-dialog.component.ts`
 
 ```ts
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-pessoas-table',
-  templateUrl: './pessoas-table.component.html',
+  selector: 'app-confirmacao-dialog',
+  standalone: true,
+  imports: [
+    MatButtonModule,
+    MatDialogActions,
+    MatDialogClose,
+    MatDialogTitle,
+    MatDialogContent,
+  ],
+  templateUrl: './confirmacao-dialog.component.html',
+  styleUrl: './confirmacao-dialog.component.scss',
 })
-export class PessoasTableComponent {
-  @Input() pessoas: any[] = [];
-  @Output() excluir = new EventEmitter<number>();
-
-  colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
-
-  onExcluir(pessoaId: number) {
-    this.excluir.emit(pessoaId);
-  }
+export class ConfirmacaoDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmacaoDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { mensagem: string }
+  ) {}
 }
 ```
 
-### b) Atualize o HTML da tabela (`pessoas-table.component.html`):
+> **Dica:** Se estiver usando Angular com `standalone components`, a propriedade `standalone: true` e o array `imports` são obrigatórios.
+
+---
+
+### `confirmacao-dialog.component.html`
 
 ```html
-<button mat-icon-button
-        color="warn"
-        matTooltip="Excluir"
-        matTooltipPosition="above"
-        (click)="onExcluir(pessoa.codigo)">
-  <mat-icon>delete</mat-icon>
-</button>
+<h2 mat-dialog-title>Confirmação</h2>
+
+<mat-dialog-content>
+  {{ data.mensagem }}
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="dialogRef.close(false)">Cancelar</button>
+  <button mat-button color="warn" (click)="dialogRef.close(true)">Confirmar</button>
+</mat-dialog-actions>
 ```
 
 ---
 
-## ✅ 2. Componente Pai (`pessoas.component.ts`)
+## ✅ 3. Usar o Diálogo no Componente Pai (`pessoas.component.ts`)
 
-### a) No HTML (`pessoas.component.html`), vincule o evento `excluir`:
+### a) Importações
 
-```html
-<app-pessoas-table
-  [pessoas]="pessoas()"
-  (excluir)="excluirPessoa($event)">
-</app-pessoas-table>
+```ts
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmacaoDialogComponent } from '../../shared/components/confirmacao-dialog/confirmacao-dialog.component';
 ```
 
-### b) Implemente o método `excluirPessoa()` no TypeScript:
+### b) Injeção via `inject()`
+
+```ts
+dialog = inject(MatDialog);
+```
+
+> Alternativamente, no construtor:
+>
+> ```ts
+> constructor(private dialog: MatDialog) {}
+> ```
+
+### c) Atualize o método `excluirPessoa()`
 
 ```ts
 excluirPessoa(codigo: number) {
-  if (confirm('Deseja realmente excluir esta pessoa?')) {
-    this.pessoasService.deletarPessoa(codigo).subscribe({
-      next: () => {
-        this.snackBar.open('Pessoa excluída com sucesso!', '', {
-          duration: 3000,
-          panelClass: ['snackbar-success']
-        });
-        this.pesquisar(); // recarrega a lista
-      },
-      error: (e) => {
-        this.snackBar.open(e.error.error, '', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
-  }
+  const dialogRef = this.dialog.open(ConfirmacaoDialogComponent, {
+    width: '350px',
+    data: { mensagem: 'Deseja realmente excluir esta pessoa?' }
+  });
+
+  dialogRef.afterClosed().subscribe(resultado => {
+    if (resultado) {
+      this.pessoasService.deletarPessoa(codigo).subscribe({
+        next: () => {
+          this.snackBar.open('Pessoa excluída com sucesso!', '', {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-success']
+          });
+          this.pesquisar();
+        },
+        error: (e) => {
+          this.snackBar.open(`${e.error.error}!`, '', {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
+  });
 }
 ```
 
----
-
-## ✅ 3. Feedback com `MatSnackBar`
-
-### a) Importe o serviço:
-
-```ts
-import { MatSnackBar } from '@angular/material/snack-bar';
-```
-
-### b) Injete com `inject()` (Angular >= 14):
-
-```ts
-snackBar = inject(MatSnackBar);
-```
-
----
-
-## ✅ 4. (Opcional) Adicionar o botão no HTML diretamente, se necessário
-
-Se a tabela não estiver isolada e quiser usar diretamente:
-
-```html
-<button mat-icon-button
-        color="warn"
-        matTooltip="Excluir"
-        matTooltipPosition="above"
-        (click)="excluirPessoa(pessoa.codigo)">
-  <mat-icon>delete</mat-icon>
-</button>
-```

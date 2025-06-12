@@ -10,7 +10,7 @@ import { Pessoa } from '../models/pessoa.model';
 export class PessoasService {
 
   // JWT hardcoded por enquanto
-  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5Njk1OTY1LCJleHAiOjE3NDk2OTk1NjV9.dPLIUqRhXhZhG9jOo_dv3VNCrcQFYSKQlveoCr9RANA';
+  private readonly jwtToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB1ZWEuZWR1LmJyIiwiaWF0IjoxNzQ5NzAwMDE2LCJleHAiOjE3NTAwNjAwMTZ9.5xYw_fg1mOJK0aurEEiETZP4Gi4i2et7P3G1-UDU8oA';
 
   private readonly apiUrl = 'http://localhost:8080/pessoas'; // ajuste para o seu backend
 

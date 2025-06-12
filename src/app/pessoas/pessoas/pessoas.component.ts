@@ -12,6 +12,9 @@ import { PessoaFiltro } from '../../models/pessoa-filtro';
 import { Pessoa } from '../../models/pessoa.model';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmacaoDialogComponent } from '../../shared/components/confirmacao-dialog/confirmacao-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+
 
 @Component({
   selector: 'app-pessoas',
@@ -23,13 +26,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    PessoasTableComponent],
+    PessoasTableComponent
+  ],
   templateUrl: './pessoas.component.html',
   styleUrl: './pessoas.component.scss'
 })
 export class PessoasComponent {
   pessoasService = inject(PessoasService);
   snackBar = inject(MatSnackBar)
+  dialog = inject(MatDialog)
 
   filtro = signal<PessoaFiltro>({
     nome: '',
@@ -65,22 +70,33 @@ export class PessoasComponent {
   }
 
   excluirPessoa(codigo: number) {
-    if (confirm('Deseja realmente excluir esta pessoa?')) {
-      this.pessoasService.deletarPessoa(codigo).subscribe({
-        next: () => {
-          this.snackBar.open('Pessoa excluída com sucesso!', '', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-          this.pesquisar(); // recarrega a lista
-        },
-        error: (e) => {
-          this.snackBar.open(e.error.error, '', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(
+      ConfirmacaoDialogComponent, {
+      width: '350px',
+      data: { mensagem: 'Deseja realmente excluir esta pessoa?' }
+    });
+    dialogRef.afterClosed().subscribe(resultado => {
+      if (resultado) {
+        this.pessoasService.deletarPessoa(codigo).subscribe({
+          next: () => {
+            this.snackBar.open('Pessoa excluída com sucesso!', '', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              panelClass: ['snackbar-success']
+            });
+            this.pesquisar();
+          },
+          error: (e) => {
+            this.snackBar.open(`${e.error.error}!`, '', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+    });
   }
 }

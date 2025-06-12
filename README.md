@@ -1,92 +1,69 @@
-# ✅ Tutorial: Logout no Angular 
+# Revisão do Serviço de Pessoas
 
-Este guia mostra como implementar o **logout funcional** em um app Angular com roteamento, redirecionamento e limpeza do token JWT ao clicar em "Sair".
+### ✅ Objetivo da Revisão
+
+* ✅ Remover `HttpHeaders` com token fixo
+* ✅ Remover campo `jwtToken`
+* ✅ Usar o `HttpClient` diretamente (o `authInterceptor` já insere o token)
 
 ---
 
-## ✅ 1. Criar o Componente `Logout` (Standalone)
-
-### 📦 Gerar via CLI (opcional)
-
-```bash
-ng generate component logout
-```
-
-### 🧩 Arquivo `logout.component.ts`
+### ✅ Versão Atualizada: `pessoas.service.ts`
 
 ```ts
-import { Component, inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
-import { Router } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { PessoaFiltro } from '../models/pessoa-filtro';
+import { Observable } from 'rxjs';
+import { Pessoa } from '../models/pessoa.model';
 
-@Component({
-  selector: 'app-logout',
-  template: ''
+@Injectable({
+  providedIn: 'root'
 })
-export class LogoutComponent {
-  private auth = inject(AuthService);
-  private router = inject(Router);
+export class PessoasService {
+  private readonly apiUrl = 'http://localhost:8080/pessoas';
+  private http = inject(HttpClient);
 
-  constructor() {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+  pesquisar(filtro: PessoaFiltro): Observable<any> {
+    let params = new HttpParams();
+
+    if (filtro.nome) {
+      params = params.set('nome', filtro.nome);
+    }
+
+    params = params.set('page', filtro.page);
+    params = params.set('size', filtro.size);
+    params = params.set('sort', filtro.sort || 'nome,asc');
+
+    return this.http.get<any>(this.apiUrl, { params });
+  }
+
+  criarPessoa(pessoa: Pessoa): Observable<Pessoa> {
+    return this.http.post<Pessoa>(this.apiUrl, pessoa);
+  }
+
+  atualizarPessoa(codigo: number, pessoa: Pessoa): Observable<Pessoa> {
+    return this.http.put<Pessoa>(`${this.apiUrl}/${codigo}`, pessoa);
+  }
+
+  deletarPessoa(codigo: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${codigo}`);
+  }
+
+  atualizarStatusAtivo(codigo: number, status: boolean): Observable<Pessoa> {
+    const url = `${this.apiUrl}/${codigo}/ativo`;
+    return this.http.patch<Pessoa>(url, status);
+  }
+
+  buscarPorCodigo(codigo: number): Observable<Pessoa> {
+    return this.http.get<Pessoa>(`${this.apiUrl}/${codigo}`);
   }
 }
 ```
-
-> 💡 Esse componente **não possui interface visual** — ele apenas **executa o logout** automaticamente quando a rota `/sair` é acessada.
-
 ---
 
-## ✅ 2. Registrar a Rota `/sair` no Arquivo de Rotas
+### ✅ Requisitos para que isso funcione corretamente:
 
-Adicione a seguinte entrada no seu `routes.ts`:
+1. O `authInterceptor` já deve estar implementado e registrado via `provideHttpClient(...)` com `withInterceptors(...)`.
+2. O `AuthService.getToken()` deve retornar o token corretamente do `localStorage`.
 
-```ts
-import { LogoutComponent } from './logout/logout.component';
-
-export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'sair', component: LogoutComponent }, // Rota de logout
-
-  {
-    path: '',
-    component: LayoutComponent,
-    canActivate: [authGuard],
-    children: [
-      { path: '', redirectTo: 'lancamentos', pathMatch: 'full' },
-      { path: 'lancamentos', component: LancamentosComponent },
-      { path: 'nova-pessoa', component: PessoaCadastroComponent },
-      { path: 'pessoas', component: PessoasComponent },
-      {
-        path: 'pessoas/editar/:codigo',
-        loadComponent: () =>
-          import('./pessoa-cadastro/pessoa-cadastro.component').then(m => m.PessoaCadastroComponent)
-      }
-    ]
-  },
-
-  { path: '**', redirectTo: '' }
-];
-```
-
----
-
-## ✅ 3. Adicionar o Link de Logout no Menu Lateral
-
-Esse trecho no HTML da sidebar já está correto:
-
-```html
-<a mat-list-item routerLink="/sair">Sair</a>
-```
-
----
-
-## 🔄 Resultado Esperado
-
-* ✅ Usuário clica em **"Sair"**
-* ✅ Rota `/sair` é acessada
-* ✅ `LogoutComponent` executa:
-
-  * `auth.logout()` → limpa o token JWT
-  * redirecionamento automático para `/login`

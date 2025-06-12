@@ -5,6 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Pessoa } from '../models/pessoa.model';
 import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-pessoas-table',
@@ -13,7 +14,8 @@ import { RouterModule } from '@angular/router';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    RouterModule
+    RouterModule,
+    CommonModule
   ],
   templateUrl: './pessoas-table.component.html',
   styleUrl: './pessoas-table.component.scss'
@@ -21,10 +23,15 @@ import { RouterModule } from '@angular/router';
 export class PessoasTableComponent {
   @Input() pessoas: Pessoa[] = [];
   @Output() excluir = new EventEmitter<number>();
+  @Output() alternarStatus = new EventEmitter<any>();
 
   colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
 
   onExcluir(pessoaId: number) {
     this.excluir.emit(pessoaId);
+  }
+
+  onAlternarStatus(pessoa: any) {
+    this.alternarStatus.emit(pessoa);
   }
 }

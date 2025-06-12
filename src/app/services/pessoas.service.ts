@@ -57,12 +57,13 @@ export class PessoasService {
     return this.http.delete<void>(url, { headers });
   }
 
-  atualizarStatusAtivo(codigo: number, ativo: boolean): Observable<Pessoa> {
+  atualizarStatusAtivo(codigo: number, status: boolean): Observable<Pessoa> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.jwtToken}`
     });
     const url = `${this.apiUrl}/${codigo}/ativo`;
-    return this.http.patch<Pessoa>(url, ativo, { headers });
+    console.log(url);
+    return this.http.patch<Pessoa>(url, status, { headers });
   }
 
   buscarPorCodigo(codigo: number): Observable<Pessoa> {

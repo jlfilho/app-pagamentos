@@ -4,3 +4,16 @@
   margin: auto;
   overflow-x: auto;
 }
+
+.status-badge {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.status-badge.ativo {
+  color: green;
+}
+
+.status-badge.desativado {
+  color: red;
+}

@@ -1,41 +1,59 @@
 <!-- Tabela de Dados -->
 <div class="tabela-container">
   <table mat-table [dataSource]="pessoas" class="mat-elevation-z8">
-
     <!-- Coluna: Nome -->
     <ng-container matColumnDef="nome">
-      <th mat-header-cell *matHeaderCellDef> Nome </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.nome }} </td>
+      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.nome }}</td>
     </ng-container>
 
     <!-- Coluna: Cidade -->
     <ng-container matColumnDef="cidade">
-      <th mat-header-cell *matHeaderCellDef> Cidade </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.endereco.cidade }} </td>
+      <th mat-header-cell *matHeaderCellDef>Cidade</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.endereco.cidade }}</td>
     </ng-container>
 
     <!-- Coluna: Vencimento -->
     <ng-container matColumnDef="estado">
-      <th mat-header-cell *matHeaderCellDef> Estado </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.endereco.estado }} </td>
+      <th mat-header-cell *matHeaderCellDef>Estado</th>
+      <td mat-cell *matCellDef="let pessoa">{{ pessoa.endereco.estado }}</td>
     </ng-container>
 
     <!-- Coluna: Pagamento -->
     <ng-container matColumnDef="status">
-      <th mat-header-cell *matHeaderCellDef> Status </th>
-      <td mat-cell *matCellDef="let pessoa"> {{ pessoa.ativo ? "Ativo" : "Desativado" }} </td>
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let pessoa">
+        <span
+          class="status-badge"
+          [ngClass]="pessoa.ativo ? 'ativo' : 'desativado'"
+          (click)="onAlternarStatus(pessoa)"
+        >
+          {{ pessoa.ativo ? "Ativo" : "Desativado" }}
+        </span>
+      </td>
     </ng-container>
 
     <!-- Coluna: Ações -->
     <ng-container matColumnDef="acoes">
-      <th mat-header-cell *matHeaderCellDef> Ações </th>
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
       <td mat-cell *matCellDef="let pessoa">
-        <button mat-icon-button color="primary" matTooltip="Editar" matTooltipPosition="above"
-        [routerLink]="['/pessoas/editar', pessoa.codigo]">
+        <button
+          mat-icon-button
+          color="primary"
+          matTooltip="Editar"
+          matTooltipPosition="above"
+          [routerLink]="['/pessoas/editar', pessoa.codigo]"
+        >
           <mat-icon>edit</mat-icon>
         </button>
 
-        <button mat-icon-button color="warn" matTooltip="Excluir" (click)="onExcluir(pessoa.codigo)" matTooltipPosition="above">
+        <button
+          mat-icon-button
+          color="warn"
+          matTooltip="Excluir"
+          (click)="onExcluir(pessoa.codigo)"
+          matTooltipPosition="above"
+        >
           <mat-icon>delete</mat-icon>
         </button>
       </td>
@@ -43,6 +61,6 @@
 
     <!-- Cabeçalho e Linhas -->
     <tr mat-header-row *matHeaderRowDef="colunas"></tr>
-    <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
+    <tr mat-row *matRowDef="let row; columns: colunas"></tr>
   </table>
 </div>

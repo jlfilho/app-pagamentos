@@ -88,13 +88,42 @@ export class PessoasComponent {
             this.pesquisar();
           },
           error: (e) => {
-            this.snackBar.open(`${e.error.error}!`, '', {
+            const msg = `${e?.error?.error}!` || 'Erro ao excluir uma pessoa.';
+            this.snackBar.open(msg, '', {
               duration: 3000,
               horizontalPosition: 'right',
               verticalPosition: 'top',
               panelClass: ['snackbar-error']
             });
           }
+        });
+      }
+    });
+  }
+
+
+  alterarStatusPessoa(pessoa: any) {
+    const novoStatus = !pessoa.ativo;
+    pessoa.ativo = novoStatus;
+
+    this.pessoasService.atualizarStatusAtivo(pessoa.codigo, novoStatus).subscribe({
+      next: () => {
+        const msg = novoStatus ? 'Pessoa ativada com sucesso!' : 'Pessoa desativada com sucesso!';
+        this.snackBar.open(msg, '', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['snackbar-success']
+        });
+        this.pesquisar();
+      },
+      error: (e) => {
+        const msg = `${e?.error?.error}!` || 'Erro ao atualizar uma pessoa.';
+            this.snackBar.open(msg, '', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['snackbar-error']
         });
       }
     });

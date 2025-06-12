@@ -11,10 +11,12 @@
     Pesquisar
   </button>
 
+  <!-- Componente tabela de pessoas -->
   <app-pessoas-table
-  [pessoas]="pessoas()"
-  (excluir)="excluirPessoa($event)">
-</app-pessoas-table>
+    [pessoas]="pessoas()"
+    (excluir)="excluirPessoa($event)"
+    (alternarStatus)="alterarStatusPessoa($event)">
+  </app-pessoas-table>
 
   <!-- Paginação -->
   <mat-paginator

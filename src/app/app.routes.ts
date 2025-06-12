@@ -6,9 +6,11 @@ import { LancamentoCadastroComponent } from './lancamento-cadastro/lancamento-ca
 import { PessoaCadastroComponent } from './pessoa-cadastro/pessoa-cadastro.component';
 import { authGuard } from './services/auth.guard';
 import { LoginComponent } from './login/login.component';
+import { LogoutComponent } from './logout/logout.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'sair', component: LogoutComponent }, // Rota de logout
   {
     path: '',
     component: LayoutComponent,
@@ -23,6 +25,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pessoa-cadastro/pessoa-cadastro.component').then(m => m.PessoaCadastroComponent)}
     ]
   },
-  { path: '**', redirectTo: '', pathMatch: 'full' }
+  { path: '**', redirectTo: '' }
 ];
 

@@ -35,7 +35,7 @@
           <mat-icon>edit</mat-icon>
         </button>
 
-        <button mat-icon-button color="warn" matTooltip="Excluir" matTooltipPosition="above">
+        <button mat-icon-button color="warn" matTooltip="Excluir" (click)="onExcluir(pessoa.codigo)" matTooltipPosition="above">
           <mat-icon>delete</mat-icon>
         </button>
       </td>

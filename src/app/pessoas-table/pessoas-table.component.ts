@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
@@ -20,6 +20,11 @@ import { RouterModule } from '@angular/router';
 })
 export class PessoasTableComponent {
   @Input() pessoas: Pessoa[] = [];
+  @Output() excluir = new EventEmitter<number>();
 
   colunas: string[] = ['nome', 'cidade', 'estado', 'status', 'acoes'];
+
+  onExcluir(pessoaId: number) {
+    this.excluir.emit(pessoaId);
+  }
 }

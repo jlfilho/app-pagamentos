@@ -5,13 +5,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableDataSource } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 import { PessoasTableComponent } from '../../pessoas-table/pessoas-table.component';
 import { PessoasService } from '../../services/pessoas.service';
 import { PessoaFiltro } from '../../models/pessoa-filtro';
 import { Pessoa } from '../../models/pessoa.model';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-pessoas',
@@ -29,6 +29,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 })
 export class PessoasComponent {
   pessoasService = inject(PessoasService);
+  snackBar = inject(MatSnackBar)
+
   filtro = signal<PessoaFiltro>({
     nome: '',
     page: 0,
@@ -62,4 +64,23 @@ export class PessoasComponent {
     this.pesquisar();
   }
 
+  excluirPessoa(codigo: number) {
+    if (confirm('Deseja realmente excluir esta pessoa?')) {
+      this.pessoasService.deletarPessoa(codigo).subscribe({
+        next: () => {
+          this.snackBar.open('Pessoa excluída com sucesso!', '', {
+            duration: 3000,
+            panelClass: ['snackbar-success']
+          });
+          this.pesquisar(); // recarrega a lista
+        },
+        error: (e) => {
+          this.snackBar.open(e.error.error, '', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
+  }
 }
